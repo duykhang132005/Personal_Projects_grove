@@ -1,6 +1,6 @@
 # Grove
 
-Nature-themed personal todo app. Built with Vite, React 19, TypeScript, React Router, and date-fns. Data lives in the browser via `localStorage`.
+Nature-themed personal todo app. Built with Vite, React 19, TypeScript, React Router, and date-fns.
 
 ## Features
 
@@ -32,7 +32,7 @@ npm install
 npm run dev
 ```
 
-Open the URL printed by Vite (typically `http://localhost:5173`).
+Open the URL printed by Vite
 
 ### Production build
 
@@ -42,14 +42,6 @@ npm run preview
 ```
 
 Output lands in `dist/` as static files you can host anywhere.
-
-## GitHub Pages
-
-Live site (after you enable Pages): https://duykhang132005.github.io/Personal_Projects_grove/
-
-Source: https://github.com/duykhang132005/Personal_Projects_grove
-
-Grove is a static SPA. Production builds default to base path /Personal_Projects_grove/. Local dev still serves from /.
 
 ### Automatic deploy
 
