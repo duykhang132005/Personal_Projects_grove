@@ -1,7 +1,5 @@
 import {
-  createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useState,
@@ -22,25 +20,7 @@ import {
   saveData,
 } from '../data/storage';
 import { uid } from '../utils/id';
-
-interface GroveContextValue {
-  ready: boolean;
-  tasks: Task[];
-  projects: Project[];
-  addTask: (input: Partial<TaskInput> & { title: string }) => Task;
-  updateTask: (id: string, patch: Partial<Task>) => void;
-  deleteTask: (id: string) => void;
-  addProject: (input: ProjectInput) => Project;
-  updateProject: (id: string, patch: Partial<Project>) => void;
-  deleteProject: (id: string) => void;
-  getTask: (id: string) => Task | undefined;
-  getProject: (id: string) => Project | undefined;
-  exportData: () => string;
-  importData: (json: string) => void;
-  resetData: () => void;
-}
-
-const GroveContext = createContext<GroveContextValue | null>(null);
+import { GroveContext } from './grove-context';
 
 function emptyTask(title: string): Task {
   const now = new Date().toISOString();
@@ -63,22 +43,16 @@ function emptyTask(title: string): Task {
 }
 
 export function GroveProvider({ children }: { children: ReactNode }) {
-  const [data, setData] = useState<GroveData | null>(null);
+  const [data, setData] = useState<GroveData>(() => loadData());
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const started = performance.now();
-    const loaded = loadData();
-    setData(loaded);
-    // Keep the splash visible briefly so it doesn't flash away instantly
-    const minMs = 700;
-    const left = Math.max(0, minMs - (performance.now() - started));
-    const t = window.setTimeout(() => setReady(true), left);
+    const t = window.setTimeout(() => setReady(true), 700);
     return () => window.clearTimeout(t);
   }, []);
 
   useEffect(() => {
-    if (data) saveData(data);
+    saveData(data);
   }, [data]);
 
   const addTask = useCallback((input: Partial<TaskInput> & { title: string }) => {
@@ -90,76 +64,65 @@ export function GroveProvider({ children }: { children: ReactNode }) {
       createdAt: now,
       updatedAt: now,
     };
-    setData((prev) => prev ? { ...prev, tasks: [...prev.tasks, task] } : prev);
+    setData((prev) => ({ ...prev, tasks: [...prev.tasks, task] }));
     return task;
   }, []);
 
   const updateTask = useCallback((id: string, patch: Partial<Task>) => {
-    setData((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        tasks: prev.tasks.map((t) =>
-          t.id === id
-            ? { ...t, ...patch, id: t.id, updatedAt: new Date().toISOString() }
-            : t
-        ),
-      };
-    });
+    setData((prev) => ({
+      ...prev,
+      tasks: prev.tasks.map((t) =>
+        t.id === id
+          ? { ...t, ...patch, id: t.id, updatedAt: new Date().toISOString() }
+          : t
+      ),
+    }));
   }, []);
 
   const deleteTask = useCallback((id: string) => {
-    setData((prev) =>
-      prev ? { ...prev, tasks: prev.tasks.filter((t) => t.id !== id) } : prev
-    );
+    setData((prev) => ({
+      ...prev,
+      tasks: prev.tasks.filter((t) => t.id !== id),
+    }));
   }, []);
 
   const addProject = useCallback((input: ProjectInput) => {
     const project: Project = { ...input, id: uid('proj') };
-    setData((prev) => prev ? { ...prev, projects: [...prev.projects, project] } : prev);
+    setData((prev) => ({ ...prev, projects: [...prev.projects, project] }));
     return project;
   }, []);
 
   const updateProject = useCallback((id: string, patch: Partial<Project>) => {
-    setData((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        projects: prev.projects.map((p) =>
-          p.id === id ? { ...p, ...patch, id: p.id } : p
-        ),
-      };
-    });
+    setData((prev) => ({
+      ...prev,
+      projects: prev.projects.map((p) =>
+        p.id === id ? { ...p, ...patch, id: p.id } : p
+      ),
+    }));
   }, []);
 
   const deleteProject = useCallback((id: string) => {
-    setData((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        projects: prev.projects.filter((p) => p.id !== id),
-        tasks: prev.tasks.map((t) =>
-          t.projectId === id
-            ? { ...t, projectId: null, updatedAt: new Date().toISOString() }
-            : t
-        ),
-      };
-    });
+    setData((prev) => ({
+      ...prev,
+      projects: prev.projects.filter((p) => p.id !== id),
+      tasks: prev.tasks.map((t) =>
+        t.projectId === id
+          ? { ...t, projectId: null, updatedAt: new Date().toISOString() }
+          : t
+      ),
+    }));
   }, []);
 
   const getTask = useCallback(
-    (id: string) => data?.tasks.find((t) => t.id === id),
+    (id: string) => data.tasks.find((t) => t.id === id),
     [data]
   );
   const getProject = useCallback(
-    (id: string) => data?.projects.find((p) => p.id === id),
+    (id: string) => data.projects.find((p) => p.id === id),
     [data]
   );
 
-  const exportData = useCallback(
-    () => (data ? exportJson(data) : '{}'),
-    [data]
-  );
+  const exportData = useCallback(() => exportJson(data), [data]);
 
   const importData = useCallback((json: string) => {
     setData(importJson(json));
@@ -172,8 +135,8 @@ export function GroveProvider({ children }: { children: ReactNode }) {
   const value = useMemo(
     () => ({
       ready,
-      tasks: data?.tasks ?? [],
-      projects: data?.projects ?? [],
+      tasks: data.tasks,
+      projects: data.projects,
       addTask,
       updateTask,
       deleteTask,
@@ -206,10 +169,4 @@ export function GroveProvider({ children }: { children: ReactNode }) {
   return (
     <GroveContext.Provider value={value}>{children}</GroveContext.Provider>
   );
-}
-
-export function useGrove(): GroveContextValue {
-  const ctx = useContext(GroveContext);
-  if (!ctx) throw new Error('useGrove must be used within GroveProvider');
-  return ctx;
 }

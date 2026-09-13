@@ -15,7 +15,7 @@ import {
   startOfWeek,
   subMonths,
 } from 'date-fns';
-import { useGrove } from '../context/GroveContext';
+import { useGrove } from '../context/useGrove';
 import { NewTaskModal } from '../components/NewTaskModal';
 import type { Task } from '../types';
 

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useGrove } from '../context/GroveContext';
+import { useGrove } from '../context/useGrove';
 import { TaskItem } from '../components/TaskItem';
 import { NewTaskModal } from '../components/NewTaskModal';
 import type { Status } from '../types';

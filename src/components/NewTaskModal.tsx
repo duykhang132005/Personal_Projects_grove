@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGrove } from '../context/GroveContext';
+import { useGrove } from '../context/useGrove';
 import type { Priority } from '../types';
 
 interface Props {

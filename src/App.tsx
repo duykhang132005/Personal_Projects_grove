@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import { GroveProvider, useGrove } from './context/GroveContext';
+import { GroveProvider } from './context/GroveContext';
+import { useGrove } from './context/useGrove';
 import { Layout } from './components/Layout';
 import { LoadingScreen } from './components/LoadingScreen';
 import { Today } from './pages/Today';
@@ -11,12 +12,11 @@ import { Projects } from './pages/Projects';
 
 function AppRoutes() {
   const { ready } = useGrove();
-  const [fading, setFading] = useState(false);
   const [showLoader, setShowLoader] = useState(true);
+  const fading = ready && showLoader;
 
   useEffect(() => {
     if (!ready) return;
-    setFading(true);
     const t = window.setTimeout(() => setShowLoader(false), 380);
     return () => window.clearTimeout(t);
   }, [ready]);

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { format, parseISO, isToday, isTomorrow, isPast } from 'date-fns';
-import { useGrove } from '../context/GroveContext';
+import { useGrove } from '../context/useGrove';
 import { TaskItem } from '../components/TaskItem';
 import { NewTaskModal } from '../components/NewTaskModal';
 

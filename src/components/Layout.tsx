@@ -1,6 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { useRef } from 'react';
-import { useGrove } from '../context/GroveContext';
+import { useGrove } from '../context/useGrove';
 
 const links = [
   { to: '/', label: 'Today', icon: '☀', end: true },

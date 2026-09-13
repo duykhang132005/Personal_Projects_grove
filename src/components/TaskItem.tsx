@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import type { Task, Project } from '../types';
-import { useGrove } from '../context/GroveContext';
+import { useGrove } from '../context/useGrove';
 import { formatDue, isOverdue, priorityLabel, statusLabel } from '../utils/format';
 
 interface Props {
