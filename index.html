@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Grove — a nature-themed personal todo app" />
+    <title>Grove</title>
+    <style>
+      #grove-boot{position:fixed;inset:0;z-index:10000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem;background:#0f2a1f;color:#e8f5e9;font-family:system-ui,sans-serif;margin:0}
+      #grove-boot[hidden]{display:none}
+      #grove-boot .boot-leaf{font-size:2rem}
+      #grove-boot .boot-title{margin:0;font-size:1.25rem;letter-spacing:.06em}
+    </style>
+  </head>
+  <body>
+    <div id="grove-boot" aria-live="polite" aria-label="Loading Grove">
+      <span class="boot-leaf" aria-hidden="true">&#127807;</span>
+      <p class="boot-title">Grove</p>
+    </div>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
