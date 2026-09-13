@@ -2,10 +2,10 @@
 
 Nature-themed personal todo app. Built with Vite, React 19, TypeScript, React Router, and date-fns. Data lives in the browser via `localStorage`.
 
-## Demo Features
+## Features
 
 - **Today** — overview of what is due now and upcoming
-- **Calendar** — week and month views
+- **Calendar** — week and month views with a rigid equal-column grid
 - **List** — browse and filter tasks
 - **Projects** — organize work into projects
 - **Task detail** — description, priority, due date/time, tags, links, notes, breakdowns, and mini-steps
@@ -32,7 +32,7 @@ npm install
 npm run dev
 ```
 
-Open the URL printed by Vite
+Open the URL printed by Vite (typically `http://localhost:5173`).
 
 ### Production build
 
@@ -42,6 +42,30 @@ npm run preview
 ```
 
 Output lands in `dist/` as static files you can host anywhere.
+
+## GitHub Pages
+
+Live site (after you enable Pages): https://duykhang132005.github.io/Personal_Projects_grove/
+
+Source: https://github.com/duykhang132005/Personal_Projects_grove
+
+Grove is a static SPA. Production builds default to base path /Personal_Projects_grove/. Local dev still serves from /.
+
+### Automatic deploy
+
+This repo includes .github/workflows/deploy-pages.yml. After you push to main:
+
+1. Open the repo on GitHub, then Settings, then Pages.
+2. Under Build and deployment, set Source to GitHub Actions.
+3. Allow the workflow to run (Actions tab). The site URL appears when deploy finishes.
+
+The production build also writes dist/404.html (copy of index.html) so deep links like /calendar work on project Pages.
+
+### Manual build
+
+Use the project build script. Override the base if needed by setting env VITE_BASE to / before building.
+
+Task data stays in each browser localStorage (no server sync).
 
 ## Project layout
 

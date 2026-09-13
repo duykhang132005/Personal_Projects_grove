@@ -33,7 +33,7 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          VITE_BASE: /Personal_Project_grove/
+          VITE_BASE: /Personal_Projects_grove/
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
