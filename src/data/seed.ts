@@ -1,5 +1,6 @@
 import type { GroveData } from '../types';
 import { uid } from '../utils/id';
+import { createFreshGarden } from '../utils/garden';
 
 function daysFromNow(n: number): string {
   const d = new Date();
@@ -22,6 +23,7 @@ export function createSeedData(): GroveData {
 
   return {
     version: 1,
+    garden: createFreshGarden(),
     projects: [
       {
         id: projectIds.academics,

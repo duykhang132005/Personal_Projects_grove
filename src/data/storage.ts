@@ -1,7 +1,18 @@
 import type { GroveData } from '../types';
 import { createSeedData } from './seed';
+import { ensureGardenWeek, createFreshGarden } from '../utils/garden';
 
 const STORAGE_KEY = 'grove-data-v1';
+
+function normalizeGroveData(data: GroveData): GroveData {
+  return {
+    ...data,
+    version: data.version ?? 1,
+    tasks: Array.isArray(data.tasks) ? data.tasks : [],
+    projects: Array.isArray(data.projects) ? data.projects : [],
+    garden: ensureGardenWeek(data.garden ?? createFreshGarden()),
+  };
+}
 
 export function loadData(): GroveData {
   try {
@@ -17,7 +28,16 @@ export function loadData(): GroveData {
       saveData(seed);
       return seed;
     }
-    return parsed;
+    const normalized = normalizeGroveData(parsed);
+    // Persist week roll / missing garden so state stays consistent
+    if (
+      !parsed.garden ||
+      parsed.garden.weekKey !== normalized.garden!.weekKey ||
+      parsed.garden.weekXp !== normalized.garden!.weekXp
+    ) {
+      saveData(normalized);
+    }
+    return normalized;
   } catch {
     const seed = createSeedData();
     saveData(seed);
@@ -26,11 +46,12 @@ export function loadData(): GroveData {
 }
 
 export function saveData(data: GroveData): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  const normalized = normalizeGroveData(data);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
 }
 
 export function exportJson(data: GroveData): string {
-  return JSON.stringify(data, null, 2);
+  return JSON.stringify(normalizeGroveData(data), null, 2);
 }
 
 export function importJson(json: string): GroveData {
@@ -38,9 +59,9 @@ export function importJson(json: string): GroveData {
   if (!Array.isArray(parsed.tasks) || !Array.isArray(parsed.projects)) {
     throw new Error('Invalid Grove data: missing tasks or projects');
   }
-  parsed.version = parsed.version ?? 1;
-  saveData(parsed);
-  return parsed;
+  const normalized = normalizeGroveData(parsed);
+  saveData(normalized);
+  return normalized;
 }
 
 export function resetToSeed(): GroveData {

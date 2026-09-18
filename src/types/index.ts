@@ -34,6 +34,8 @@ export interface Task {
   breakdowns: BreakdownSection[];
   createdAt: string;
   updatedAt: string;
+  /** Lifetime grant-once flag for Garden task XP */
+  xpGranted?: boolean;
 }
 
 export interface Project {
@@ -44,10 +46,18 @@ export interface Project {
   emoji: string;
 }
 
+export interface GardenState {
+  weekKey: string; // current week id (Monday-start local week)
+  weekXp: number; // XP this week (water + tasks)
+  lastWateredDate: string | null; // yyyy-MM-dd
+  taskXpByDay: Record<string, number>; // date -> task XP earned that day
+}
+
 export interface GroveData {
   tasks: Task[];
   projects: Project[];
   version: number;
+  garden?: GardenState; // optional for backward compat; normalize on load
 }
 
 export type TaskInput = Omit<Task, 'id' | 'createdAt' | 'updatedAt'>;
