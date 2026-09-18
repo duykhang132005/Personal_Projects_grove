@@ -4,14 +4,14 @@ Nature-themed personal todo app. Built with Vite, React 19, TypeScript, React Ro
 
 ## Features
 
-- **Today** — overview of what is due now and upcoming
-- **Calendar** — week and month views with a rigid equal-column grid
-- **List** — browse and filter tasks
-- **Projects** — organize work into projects
-- **Garden** — one plant grown from weekly XP (daily water + task completion)
-- **Task detail** — description, priority, due date/time, tags, links, notes, breakdowns, and mini-steps
-- **Persistence** — `localStorage`, JSON export/import, and seed reset
-- **Loading splash** — shown while the app boots and React hydrates
+- **Today** : overview of what is due now and upcoming
+- **Calendar** : week and month views with a rigid equal-column grid
+- **List** : browse and filter tasks
+- **Projects** : organize work into projects
+- **Garden** : one plant grown from weekly XP (daily water + task completion)
+- **Task detail** : description, priority, due date/time, tags, links, notes, breakdowns, and mini-steps
+- **Persistence** : `localStorage`, JSON export/import, and seed reset
+- **Loading splash** : shown while the app boots and React hydrates
 
 ## Requirements
 

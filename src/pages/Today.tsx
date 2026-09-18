@@ -59,7 +59,7 @@ export function Today() {
             {greeting}
           </h2>
           <p className="subtitle">
-            {format(new Date(), 'EEEE, MMMM d')} — tend what matters today
+            {format(new Date(), 'EEEE, MMMM d')}. Tend what matters today
           </p>
         </div>
         <div className="header-actions">

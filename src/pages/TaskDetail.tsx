@@ -20,7 +20,7 @@ export function TaskDetail() {
     return (
       <div className="empty card">
         <div className="leaf">🌵</div>
-        <p>Task not found — it may have been cleared away.</p>
+        <p>Task not found. It may have been cleared away.</p>
         <Link to="/" className="btn btn-secondary" style={{ marginTop: '1rem' }}>
           Back to Today
         </Link>

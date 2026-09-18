@@ -6,7 +6,7 @@ const index = join(dist, "index.html")
 const notFound = join(dist, "404.html")
 
 if (!existsSync(index)) {
-  console.error("copy-404: dist/index.html missing — run vite build first")
+  console.error("copy-404: dist/index.html missing. Run vite build first")
   process.exit(1)
 }
 

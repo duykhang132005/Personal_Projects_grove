@@ -105,7 +105,7 @@ export function createSeedData(): GroveData {
       },
       {
         id: uid('task'),
-        title: 'Practice piano — Chopin Nocturne',
+        title: 'Practice piano: Chopin Nocturne',
         description: 'Work through the middle section slowly with metronome.',
         status: 'todo',
         priority: 'medium',
@@ -134,7 +134,7 @@ export function createSeedData(): GroveData {
             id: uid('bd'),
             title: 'Piece work',
             steps: [
-              { id: uid('step'), title: 'Bars 17–32 slowly', completed: false },
+              { id: uid('step'), title: 'Bars 17-32 slowly', completed: false },
               { id: uid('step'), title: 'Pedal markings', completed: false },
             ],
           },
@@ -201,16 +201,16 @@ export function createSeedData(): GroveData {
             url: 'https://example.com/course',
           },
         ],
-        notes: 'Problems 1–4 require Laplace transforms.',
+        notes: 'Problems 1-4 require Laplace transforms.',
         breakdowns: [
           {
             id: uid('bd'),
             title: 'Problems',
             steps: [
-              { id: uid('step'), title: 'Problem 1 — IVP', completed: true },
-              { id: uid('step'), title: 'Problem 2 — systems', completed: false },
-              { id: uid('step'), title: 'Problem 3 — Fourier', completed: false },
-              { id: uid('step'), title: 'Problem 4 — review', completed: false },
+              { id: uid('step'), title: 'Problem 1: IVP', completed: true },
+              { id: uid('step'), title: 'Problem 2: systems', completed: false },
+              { id: uid('step'), title: 'Problem 3: Fourier', completed: false },
+              { id: uid('step'), title: 'Problem 4: review', completed: false },
               { id: uid('step'), title: 'Upload PDF', completed: false },
             ],
           },

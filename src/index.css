@@ -1,5 +1,5 @@
 :root {
-  /* Nature palette — soft greens, cream, earth */
+  /* Nature palette: soft greens, cream, earth */
   --cream: #f7f3eb;
   --cream-dark: #efe8da;
   --parchment: #faf7f0;
@@ -1051,7 +1051,7 @@ textarea {
   }
 }
 
-/* —— Loading splash —— */
+/* ===== Loading splash ===== */
 .grove-loader {
   position: fixed;
   inset: 0;
@@ -1356,10 +1356,43 @@ textarea {
   padding-top: 1rem;
 }
 
-.garden-rules h4 {
-  font-size: 0.95rem;
+.garden-rules-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  justify-content: flex-start;
+  padding-left: 0.35rem;
+  padding-right: 0.35rem;
   color: var(--bark);
-  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.garden-rules-toggle:hover {
+  color: var(--leaf-dark);
+  text-decoration: none;
+}
+
+.garden-rules-panel {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.28s ease, opacity 0.22s ease, margin-top 0.28s ease;
+  margin-top: 0;
+}
+
+.garden-rules-panel.is-open {
+  max-height: 28rem;
+  opacity: 1;
+  margin-top: 0.65rem;
+}
+
+.garden-rules-panel[hidden] {
+  display: none;
+}
+
+.garden-rules-panel.is-open[hidden] {
+  display: block;
 }
 
 .garden-rules ul {

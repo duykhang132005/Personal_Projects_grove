@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useGrove } from '../context/useGrove';
 import {
   DAILY_TASK_XP_CAP,
@@ -11,6 +11,7 @@ import {
 
 export function Garden() {
   const { garden, waterPlant } = useGrove();
+  const [rulesOpen, setRulesOpen] = useState(false);
   const today = todayKey();
   const alreadyWatered = wateredToday(garden.lastWateredDate);
   const wilted = isWilted(garden.lastWateredDate) && !alreadyWatered;
@@ -30,7 +31,7 @@ export function Garden() {
         <div>
           <h2 className="leaf-accent">Garden</h2>
           <p className="subtitle">
-            Grow one plant with weekly XP — water daily and finish tasks
+            Grow one plant with weekly XP. Water daily and finish tasks.
           </p>
         </div>
       </div>
@@ -63,7 +64,7 @@ export function Garden() {
           <div className="garden-xp-bar-meta">
             {next
               ? `${xpIntoStage} / ${next.minXp - stage.minXp} XP toward ${next.name}`
-              : 'Ancient grove — keep watering for next week'}
+              : 'Ancient grove. Keep watering for next week'}
           </div>
 
           <button
@@ -78,7 +79,7 @@ export function Garden() {
             <p className="garden-hint">Come back tomorrow for another drink.</p>
           ) : wilted ? (
             <p className="garden-hint garden-hint-wilt">
-              Looking thirsty — water to perk it up (cosmetic until you water).
+              Looking thirsty. Water to perk it up (cosmetic until you water).
             </p>
           ) : (
             <p className="garden-hint">Once per local day. Water XP does not use the task XP cap.</p>
@@ -110,7 +111,7 @@ export function Garden() {
                 {alreadyWatered
                   ? 'Done for today'
                   : wilted
-                    ? 'Wilted — needs water'
+                    ? 'Wilted, needs water'
                     : 'Ready to water'}
               </span>
             </li>
@@ -121,27 +122,45 @@ export function Garden() {
           </ul>
 
           <div className="garden-rules">
-            <h4>How XP works</h4>
-            <ul>
-              <li>
-                Water once per day: <strong>+{WATER_XP} XP</strong> (not capped).
-              </li>
-              <li>
-                Completing a task: low 5 / medium 10 / high 15 / urgent 20.
-              </li>
-              <li>
-                Created less than 2 minutes before done → half XP (floored).
-              </li>
-              <li>
-                Task XP capped at <strong>{DAILY_TASK_XP_CAP}/day</strong>. If the
-                cap awards 0, the task is still marked granted (no retry later).
-              </li>
-              <li>
-                Each task grants once for life (<code>xpGranted</code>), even if
-                undone and redone.
-              </li>
-              <li>Week XP resets every Monday (local week).</li>
-            </ul>
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm garden-rules-toggle"
+              aria-expanded={rulesOpen}
+              aria-controls="garden-rules-panel"
+              id="garden-rules-toggle"
+              onClick={() => setRulesOpen((open) => !open)}
+            >
+              <span aria-hidden>{rulesOpen ? '▾' : '▸'}</span>
+              How does the garden work?
+            </button>
+            <div
+              id="garden-rules-panel"
+              className={`garden-rules-panel${rulesOpen ? ' is-open' : ''}`}
+              role="region"
+              aria-labelledby="garden-rules-toggle"
+              hidden={!rulesOpen}
+            >
+              <ul>
+                <li>
+                  Water once per day: <strong>+{WATER_XP} XP</strong> (not capped).
+                </li>
+                <li>
+                  Completing a task: low 5 / medium 10 / high 15 / urgent 20.
+                </li>
+                <li>
+                  Created less than 2 minutes before done → half XP (floored).
+                </li>
+                <li>
+                  Task XP capped at <strong>{DAILY_TASK_XP_CAP}/day</strong>. If the
+                  cap awards 0, the task is still marked granted (no retry later).
+                </li>
+                <li>
+                  Each task grants once for life (<code>xpGranted</code>), even if
+                  undone and redone.
+                </li>
+                <li>Week XP resets every Monday (local week).</li>
+              </ul>
+            </div>
           </div>
         </section>
       </div>

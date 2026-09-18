@@ -197,7 +197,7 @@ export function Projects() {
             >
               <div className="project-emoji">{p.emoji}</div>
               <h3>{p.name}</h3>
-              <p>{p.description || '—'}</p>
+              <p>{p.description || 'None'}</p>
               <div className="project-count">
                 {c.open} open · {c.total} total
               </div>
