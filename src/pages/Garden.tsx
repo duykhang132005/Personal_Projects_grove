@@ -155,8 +155,7 @@ export function Garden() {
                   cap awards 0, the task is still marked granted (no retry later).
                 </li>
                 <li>
-                  Each task grants once for life (<code>xpGranted</code>), even if
-                  undone and redone.
+                  Each task only awards XP once, even if you undo it and mark it done again.
                 </li>
                 <li>Week XP resets every Monday (local week).</li>
               </ul>
