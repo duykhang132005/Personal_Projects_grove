@@ -46,7 +46,7 @@ Output lands in `dist/` as static files you can host anywhere.
 
 ## GitHub Pages
 
-Live site (after you enable Pages): https://duykhang132005.github.io/Personal_Projects_grove/
+Live site: https://duykhang132005.github.io/Personal_Projects_grove/
 
 Source: https://github.com/duykhang132005/Personal_Projects_grove
 
