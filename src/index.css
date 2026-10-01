@@ -492,6 +492,11 @@ button {
   background: #d4e8da;
   color: #2f5a3e;
 }
+.badge-status-overdue {
+  background: #fce8e4;
+  color: #a33d30;
+  font-weight: 700;
+}
 
 .badge-tag {
   background: var(--cream-dark);

@@ -9,7 +9,7 @@ export function Today() {
   const [modalOpen, setModalOpen] = useState(false);
   const todayStr = format(new Date(), 'yyyy-MM-dd');
 
-  const { todayTasks, upcoming, overdue, inProgress, doneToday, openCount } =
+  const { todayTasks, upcoming, overdue, inProgress, inProgressCount, doneToday, openCount } =
     useMemo(() => {
       const open = tasks.filter((t) => t.status !== 'done');
       const todayTasks = open.filter(
@@ -28,7 +28,13 @@ export function Today() {
         })
         .sort((a, b) => (a.dueDate ?? '').localeCompare(b.dueDate ?? ''))
         .slice(0, 5);
-      const inProgress = open.filter((t) => t.status === 'in-progress');
+      const inProgressCount = open.filter((t) => t.status === 'in-progress').length;
+      // Each task appears in one section only: in-progress tasks that are already
+      // listed as overdue, due today, or coming up are not repeated below.
+      const listed = new Set([...overdue, ...todayTasks, ...upcoming].map((t) => t.id));
+      const inProgress = open.filter(
+        (t) => t.status === 'in-progress' && !listed.has(t.id)
+      );
       const doneToday = tasks.filter(
         (t) =>
           t.status === 'done' &&
@@ -39,6 +45,7 @@ export function Today() {
         upcoming,
         overdue,
         inProgress,
+        inProgressCount,
         doneToday,
         openCount: open.length,
       };
@@ -80,7 +87,7 @@ export function Today() {
         </div>
         <div className="stat-card">
           <div className="label">In progress</div>
-          <div className="value">{inProgress.length}</div>
+          <div className="value">{inProgressCount}</div>
         </div>
         <div className="stat-card">
           <div className="label">Overdue</div>

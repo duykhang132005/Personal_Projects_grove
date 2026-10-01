@@ -43,8 +43,12 @@ export function TaskItem({ task, showProject = true }: Props) {
           <span className={`badge badge-priority-${task.priority}`}>
             {priorityLabel(task.priority)}
           </span>
-          <span className={`badge badge-status-${task.status}`}>
-            {statusLabel(task.status)}
+          <span className={`badge badge-status-${overdue ? 'overdue' : task.status}`}>
+            {overdue
+              ? task.status === 'in-progress'
+                ? 'Overdue (in progress)'
+                : 'Overdue'
+              : statusLabel(task.status)}
           </span>
           {showProject && project && (
             <span className="badge badge-project">
@@ -52,11 +56,8 @@ export function TaskItem({ task, showProject = true }: Props) {
             </span>
           )}
           {due && (
-            <span
-              className="badge badge-date"
-              style={overdue ? { color: 'var(--urgent)', fontWeight: 700 } : undefined}
-            >
-              {overdue ? '⚠ ' : '📅 '}
+            <span className="badge badge-date">
+              {'📅 '}
               {due}
             </span>
           )}
