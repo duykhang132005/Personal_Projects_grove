@@ -38,7 +38,7 @@ export function Today() {
       const doneToday = tasks.filter(
         (t) =>
           t.status === 'done' &&
-          t.updatedAt.slice(0, 10) === todayStr
+          format(parseISO(t.updatedAt), 'yyyy-MM-dd') === todayStr
       );
       return {
         todayTasks,
