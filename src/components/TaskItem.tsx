@@ -16,19 +16,14 @@ export function TaskItem({ task, showProject = true }: Props) {
   const due = formatDue(task);
   const overdue = isOverdue(task);
 
-  function toggleDone(e: React.MouseEvent) {
-    e.preventDefault();
-    e.stopPropagation();
+  function toggleDone() {
     updateTask(task.id, {
       status: task.status === 'done' ? 'todo' : 'done',
     });
   }
 
   return (
-    <Link
-      to={`/task/${task.id}`}
-      className={`task-item${task.status === 'done' ? ' done' : ''}`}
-    >
+    <div className={`task-item${task.status === 'done' ? ' done' : ''}`}>
       <button
         type="button"
         className={`task-check${task.status === 'done' ? ' checked' : ''}`}
@@ -38,7 +33,10 @@ export function TaskItem({ task, showProject = true }: Props) {
         {task.status === 'done' ? '✓' : ''}
       </button>
       <div className="task-body">
-        <div className="task-title">{task.title}</div>
+        {/* Stretched link: its ::after covers the row so the whole card opens the task */}
+        <Link to={`/task/${task.id}`} className="task-title task-link">
+          {task.title}
+        </Link>
         <div className="task-meta">
           <span className={`badge badge-priority-${task.priority}`}>
             {priorityLabel(task.priority)}
@@ -68,6 +66,6 @@ export function TaskItem({ task, showProject = true }: Props) {
           ))}
         </div>
       </div>
-    </Link>
+    </div>
   );
 }

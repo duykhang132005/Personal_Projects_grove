@@ -8,7 +8,8 @@ const COLORS = ['#5a8f6b', '#7a9e6e', '#8b7355', '#6b9e8a', '#9a7b5a', '#5a7a8f'
 const EMOJIS = ['📚', '🎵', '🌿', '🍃', '🪴', '🌻', '🪺', '🪵'];
 
 export function Projects() {
-  const { projects, tasks, addProject, deleteProject, updateProject } = useGrove();
+  const { projects, tasks, addProject, deleteProject, updateProject, withUndo } =
+    useGrove();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -86,14 +87,11 @@ export function Projects() {
               type="button"
               className="btn btn-danger"
               onClick={() => {
-                if (
-                  confirm(
-                    `Delete project “${selected.name}”? Tasks will be unassigned.`
-                  )
-                ) {
-                  deleteProject(selected.id);
-                  setSelectedId(null);
-                }
+                const projectId = selected.id;
+                withUndo(`Project “${selected.name}” deleted`, () =>
+                  deleteProject(projectId)
+                );
+                setSelectedId(null);
               }}
             >
               Delete project

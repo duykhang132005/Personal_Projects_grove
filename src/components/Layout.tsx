@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { useRef } from 'react';
 import { useGrove } from '../context/useGrove';
+import { UndoToast } from './UndoToast';
 
 const links = [
   { to: '/', label: 'Today', icon: '☀', end: true },
@@ -11,7 +12,7 @@ const links = [
 ];
 
 export function Layout() {
-  const { exportData, importData, resetData } = useGrove();
+  const { exportData, importData, resetData, withUndo } = useGrove();
   const fileRef = useRef<HTMLInputElement>(null);
 
   function handleExport() {
@@ -91,11 +92,7 @@ export function Layout() {
           <button
             type="button"
             className="btn btn-ghost btn-sm"
-            onClick={() => {
-              if (confirm('Reset to sample data? Your current tasks will be replaced.')) {
-                resetData();
-              }
-            }}
+            onClick={() => withUndo('Sample data restored', resetData)}
           >
             Reset sample
           </button>
@@ -104,6 +101,7 @@ export function Layout() {
       <main className="main">
         <Outlet />
       </main>
+      <UndoToast />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGrove } from '../context/useGrove';
 import type { Priority } from '../types';
@@ -22,6 +22,15 @@ export function NewTaskModal({
   const [projectId, setProjectId] = useState<string>(defaultProjectId ?? '');
   const [dueDate, setDueDate] = useState(defaultDueDate ?? '');
   const [priority, setPriority] = useState<Priority>('medium');
+
+  useEffect(() => {
+    if (!open) return;
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose();
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [open, onClose]);
 
   if (!open) return null;
 
@@ -48,6 +57,7 @@ export function NewTaskModal({
         className="modal"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
+        aria-modal="true"
         aria-labelledby="new-task-title"
       >
         <h3 id="new-task-title">❧ Plant a new task</h3>

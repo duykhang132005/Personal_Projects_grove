@@ -7,6 +7,11 @@ import type {
   TaskInput,
 } from '../types';
 
+export interface UndoToastState {
+  id: number;
+  message: string;
+}
+
 export interface GroveContextValue {
   ready: boolean;
   tasks: Task[];
@@ -23,6 +28,11 @@ export interface GroveContextValue {
   waterPlant: () => { watered: boolean; reason?: string };
   exportData: () => string;
   importData: (json: string) => void;
+  /** Runs an action and shows an Undo toast that restores the data from just before it. */
+  withUndo: (message: string, action: () => void) => void;
+  undoToast: UndoToastState | null;
+  undo: () => void;
+  dismissUndo: () => void;
   resetData: () => void;
 }
 

@@ -2,6 +2,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -21,7 +22,7 @@ import {
   saveData,
 } from '../data/storage';
 import { uid } from '../utils/id';
-import { GroveContext } from './grove-context';
+import { GroveContext, type UndoToastState } from './grove-context';
 import {
   WATER_XP,
   computeTaskXpAward,
@@ -61,6 +62,9 @@ function withGarden(data: GroveData): GroveData {
 export function GroveProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<GroveData>(() => withGarden(loadData()));
   const [ready, setReady] = useState(false);
+  const [undoToast, setUndoToast] = useState<UndoToastState | null>(null);
+  const undoSnapshot = useRef<GroveData | null>(null);
+  const toastSeq = useRef(0);
 
   useEffect(() => {
     const t = window.setTimeout(() => setReady(true), 700);
@@ -219,6 +223,28 @@ export function GroveProvider({ children }: { children: ReactNode }) {
     setData(withGarden(resetToSeed()));
   }, []);
 
+  const withUndo = useCallback(
+    (message: string, action: () => void) => {
+      undoSnapshot.current = data;
+      toastSeq.current += 1;
+      setUndoToast({ id: toastSeq.current, message });
+      action();
+    },
+    [data]
+  );
+
+  const undo = useCallback(() => {
+    const snapshot = undoSnapshot.current;
+    undoSnapshot.current = null;
+    setUndoToast(null);
+    if (snapshot) setData(snapshot);
+  }, []);
+
+  const dismissUndo = useCallback(() => {
+    undoSnapshot.current = null;
+    setUndoToast(null);
+  }, []);
+
   const garden = useMemo(
     () => ensureGardenWeek(data.garden ?? createFreshGarden()),
     [data.garden]
@@ -265,6 +291,10 @@ export function GroveProvider({ children }: { children: ReactNode }) {
       waterPlant,
       exportData,
       importData,
+      withUndo,
+      undoToast,
+      undo,
+      dismissUndo,
       resetData,
     }),
     [
@@ -282,6 +312,10 @@ export function GroveProvider({ children }: { children: ReactNode }) {
       waterPlant,
       exportData,
       importData,
+      withUndo,
+      undoToast,
+      undo,
+      dismissUndo,
       resetData,
     ]
   );
