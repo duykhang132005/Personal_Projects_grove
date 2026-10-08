@@ -7,9 +7,12 @@ import type {
   TaskInput,
 } from '../types';
 
-export interface UndoToastState {
+export type ToastKind = 'undo' | 'info' | 'error';
+
+export interface ToastState {
   id: number;
   message: string;
+  kind: ToastKind;
 }
 
 export interface GroveContextValue {
@@ -28,12 +31,18 @@ export interface GroveContextValue {
   waterPlant: () => { watered: boolean; reason?: string };
   exportData: () => string;
   importData: (json: string) => void;
-  /** Runs an action and shows an Undo toast that restores the data from just before it. */
-  withUndo: (message: string, action: () => void) => void;
-  undoToast: UndoToastState | null;
+  /** Deletes a task; the toast's Undo puts back just that task. */
+  deleteTaskWithUndo: (id: string) => void;
+  /** Deletes a project; the toast's Undo restores it and re-attaches its tasks. */
+  deleteProjectWithUndo: (id: string) => void;
+  /** Shows a toast without an Undo button, e.g. an import error. */
+  showNotice: (message: string, kind?: 'info' | 'error') => void;
+  toast: ToastState | null;
   undo: () => void;
-  dismissUndo: () => void;
+  dismissToast: () => void;
   resetData: () => void;
+  /** Resets to sample data; Undo restores a full snapshot (whole-data action). */
+  resetDataWithUndo: () => void;
 }
 
 export const GroveContext = createContext<GroveContextValue | null>(null);

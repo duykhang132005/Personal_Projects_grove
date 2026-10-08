@@ -994,6 +994,14 @@ textarea {
   color: var(--cream);
 }
 
+.toast-error {
+  background: #a33d30;
+}
+
+.toast-error .toast-close {
+  color: #f3c9c1;
+}
+
 @keyframes grove-toast-in {
   from {
     opacity: 0;

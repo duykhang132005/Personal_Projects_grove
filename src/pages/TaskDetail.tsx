@@ -13,7 +13,7 @@ import type {
 export function TaskDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getTask, updateTask, deleteTask, projects, withUndo } = useGrove();
+  const { getTask, updateTask, deleteTaskWithUndo, projects } = useGrove();
   const task = id ? getTask(id) : undefined;
 
   if (!task) {
@@ -115,8 +115,7 @@ export function TaskDetail() {
   }
 
   function handleDelete() {
-    const taskId = task!.id;
-    withUndo('Task deleted', () => deleteTask(taskId));
+    deleteTaskWithUndo(task!.id);
     navigate('/list');
   }
 

@@ -1,18 +1,19 @@
 import { useMemo, useState } from 'react';
 import { useGrove } from '../context/useGrove';
+import { useToday } from '../hooks/useToday';
 import {
   DAILY_TASK_XP_CAP,
   WATER_XP,
   isWilted,
   stageForXp,
-  todayKey,
   wateredToday,
 } from '../utils/garden';
 
 export function Garden() {
   const { garden, waterPlant } = useGrove();
   const [rulesOpen, setRulesOpen] = useState(false);
-  const today = todayKey();
+  // Re-renders when the local date changes, so watered / wilted state resets at midnight
+  const today = useToday();
   const alreadyWatered = wateredToday(garden.lastWateredDate);
   const wilted = isWilted(garden.lastWateredDate) && !alreadyWatered;
   const taskXpToday = garden.taskXpByDay[today] ?? 0;

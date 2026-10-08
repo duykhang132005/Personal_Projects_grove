@@ -22,7 +22,8 @@ import {
   saveData,
 } from '../data/storage';
 import { uid } from '../utils/id';
-import { GroveContext, type UndoToastState } from './grove-context';
+import { GroveContext, type ToastKind, type ToastState } from './grove-context';
+import { useToday } from '../hooks/useToday';
 import {
   WATER_XP,
   computeTaskXpAward,
@@ -62,9 +63,12 @@ function withGarden(data: GroveData): GroveData {
 export function GroveProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<GroveData>(() => withGarden(loadData()));
   const [ready, setReady] = useState(false);
-  const [undoToast, setUndoToast] = useState<UndoToastState | null>(null);
-  const undoSnapshot = useRef<GroveData | null>(null);
+  const [toast, setToast] = useState<ToastState | null>(null);
+  // Restore function for the toast currently on screen (null when there is nothing to undo)
+  const undoAction = useRef<(() => void) | null>(null);
   const toastSeq = useRef(0);
+  // Local day key; changes at local midnight so the garden week roll is re-checked
+  const today = useToday();
 
   useEffect(() => {
     const t = window.setTimeout(() => setReady(true), 700);
@@ -172,14 +176,16 @@ export function GroveProvider({ children }: { children: ReactNode }) {
     }));
   }, [rollGarden]);
 
-  const deleteProject = useCallback((id: string) => {
+  // stamp lets deleteProjectWithUndo recognise the updatedAt this delete wrote
+  const deleteProject = useCallback((id: string, stamp?: string) => {
+    const detachedAt = stamp ?? new Date().toISOString();
     setData((prev) => ({
       ...prev,
       garden: rollGarden(prev.garden),
       projects: prev.projects.filter((p) => p.id !== id),
       tasks: prev.tasks.map((t) =>
         t.projectId === id
-          ? { ...t, projectId: null, updatedAt: new Date().toISOString() }
+          ? { ...t, projectId: null, updatedAt: detachedAt }
           : t
       ),
     }));
@@ -217,37 +223,118 @@ export function GroveProvider({ children }: { children: ReactNode }) {
 
   const importData = useCallback((json: string) => {
     setData(withGarden(importJson(json)));
+    // Imported data replaces everything, so a pending Undo no longer applies
+    undoAction.current = null;
+    setToast(null);
   }, []);
 
   const resetData = useCallback(() => {
     setData(withGarden(resetToSeed()));
   }, []);
 
-  const withUndo = useCallback(
-    (message: string, action: () => void) => {
-      undoSnapshot.current = data;
+  const openToast = useCallback(
+    (message: string, kind: ToastKind, restore: (() => void) | null) => {
+      undoAction.current = restore;
       toastSeq.current += 1;
-      setUndoToast({ id: toastSeq.current, message });
-      action();
+      setToast({ id: toastSeq.current, message, kind });
     },
-    [data]
+    []
+  );
+
+  const showNotice = useCallback(
+    (message: string, kind: 'info' | 'error' = 'info') => {
+      openToast(message, kind, null);
+    },
+    [openToast]
   );
 
   const undo = useCallback(() => {
-    const snapshot = undoSnapshot.current;
-    undoSnapshot.current = null;
-    setUndoToast(null);
-    if (snapshot) setData(snapshot);
+    const restore = undoAction.current;
+    undoAction.current = null;
+    setToast(null);
+    restore?.();
   }, []);
 
-  const dismissUndo = useCallback(() => {
-    undoSnapshot.current = null;
-    setUndoToast(null);
+  const dismissToast = useCallback(() => {
+    undoAction.current = null;
+    setToast(null);
   }, []);
+
+  // Targeted undo: puts back only the deleted task (same id, same position),
+  // so XP and edits made while the toast is showing are kept.
+  const deleteTaskWithUndo = useCallback(
+    (id: string) => {
+      const index = data.tasks.findIndex((t) => t.id === id);
+      if (index === -1) return;
+      const removed = data.tasks[index];
+      deleteTask(id);
+      openToast('Task deleted', 'undo', () => {
+        setData((prev) => {
+          if (prev.tasks.some((t) => t.id === removed.id)) return prev;
+          const tasks = [...prev.tasks];
+          tasks.splice(Math.min(index, tasks.length), 0, removed);
+          return { ...prev, tasks };
+        });
+      });
+    },
+    [data.tasks, deleteTask, openToast]
+  );
+
+  // Targeted undo: deleteProject keeps its tasks and only clears their projectId,
+  // so Undo puts the project back (same position) and re-attaches exactly those tasks.
+  const deleteProjectWithUndo = useCallback(
+    (id: string) => {
+      const index = data.projects.findIndex((p) => p.id === id);
+      if (index === -1) return;
+      const removed = data.projects[index];
+      // task id -> updatedAt before the delete touched it
+      const detached = new Map(
+        data.tasks
+          .filter((t) => t.projectId === id)
+          .map((t) => [t.id, t.updatedAt] as const)
+      );
+      const stamp = new Date().toISOString();
+      deleteProject(id, stamp);
+      openToast(`Project “${removed.name}” deleted`, 'undo', () => {
+        setData((prev) => {
+          const projects = prev.projects.some((p) => p.id === removed.id)
+            ? prev.projects
+            : [
+                ...prev.projects.slice(0, index),
+                removed,
+                ...prev.projects.slice(index),
+              ];
+          const tasks = prev.tasks.map((t) => {
+            const originalUpdatedAt = detached.get(t.id);
+            // Leave tasks this delete did not detach, or that were reassigned since
+            if (originalUpdatedAt === undefined || t.projectId !== null) return t;
+            return {
+              ...t,
+              projectId: removed.id,
+              // Roll back only the timestamp the delete itself wrote
+              updatedAt: t.updatedAt === stamp ? originalUpdatedAt : t.updatedAt,
+            };
+          });
+          return { ...prev, projects, tasks };
+        });
+      });
+    },
+    [data.projects, data.tasks, deleteProject, openToast]
+  );
+
+  // today is a dependency so a new local week is picked up while the app stays open
+  // Whole-data action, so a full snapshot undo is intentional here: anything
+  // changed while this toast is showing is replaced by the pre-reset data.
+  const resetDataWithUndo = useCallback(() => {
+    const snapshot = data;
+    resetData();
+    openToast('Sample data restored', 'undo', () => setData(snapshot));
+  }, [data, resetData, openToast]);
 
   const garden = useMemo(
     () => ensureGardenWeek(data.garden ?? createFreshGarden()),
-    [data.garden]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [data.garden, today]
   );
 
   // Persist week roll once when garden read detects a new week
@@ -272,7 +359,7 @@ export function GroveProvider({ children }: { children: ReactNode }) {
     }
     // intentionally only when stored garden identity changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data.garden?.weekKey, data.garden?.weekXp, data.garden?.lastWateredDate]);
+  }, [data.garden?.weekKey, data.garden?.weekXp, data.garden?.lastWateredDate, today]);
 
   const value = useMemo(
     () => ({
@@ -291,11 +378,14 @@ export function GroveProvider({ children }: { children: ReactNode }) {
       waterPlant,
       exportData,
       importData,
-      withUndo,
-      undoToast,
+      deleteTaskWithUndo,
+      deleteProjectWithUndo,
+      showNotice,
+      toast,
       undo,
-      dismissUndo,
+      dismissToast,
       resetData,
+      resetDataWithUndo,
     }),
     [
       ready,
@@ -312,11 +402,14 @@ export function GroveProvider({ children }: { children: ReactNode }) {
       waterPlant,
       exportData,
       importData,
-      withUndo,
-      undoToast,
+      deleteTaskWithUndo,
+      deleteProjectWithUndo,
+      showNotice,
+      toast,
       undo,
-      dismissUndo,
+      dismissToast,
       resetData,
+      resetDataWithUndo,
     ]
   );
 

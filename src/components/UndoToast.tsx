@@ -2,28 +2,33 @@ import { useEffect } from 'react';
 import { useGrove } from '../context/useGrove';
 
 const TOAST_MS = 6000;
+const ERROR_TOAST_MS = 8000;
 
+/** Shared toast area: Undo toasts for deletes plus plain info / error notices. */
 export function UndoToast() {
-  const { undoToast, undo, dismissUndo } = useGrove();
+  const { toast, undo, dismissToast } = useGrove();
 
   useEffect(() => {
-    if (!undoToast) return;
-    const t = window.setTimeout(dismissUndo, TOAST_MS);
+    if (!toast) return;
+    const ms = toast.kind === 'error' ? ERROR_TOAST_MS : TOAST_MS;
+    const t = window.setTimeout(dismissToast, ms);
     return () => window.clearTimeout(t);
-  }, [undoToast, dismissUndo]);
+  }, [toast, dismissToast]);
 
   return (
     <div className="toast-region" role="status" aria-live="polite">
-      {undoToast && (
-        <div className="toast" key={undoToast.id}>
-          <span>{undoToast.message}</span>
-          <button type="button" className="toast-undo" onClick={undo}>
-            Undo
-          </button>
+      {toast && (
+        <div className={`toast toast-${toast.kind}`} key={toast.id}>
+          <span>{toast.message}</span>
+          {toast.kind === 'undo' && (
+            <button type="button" className="toast-undo" onClick={undo}>
+              Undo
+            </button>
+          )}
           <button
             type="button"
             className="toast-close"
-            onClick={dismissUndo}
+            onClick={dismissToast}
             aria-label="Dismiss"
           >
             ×

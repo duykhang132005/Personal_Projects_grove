@@ -3,11 +3,14 @@ import { format, parseISO, isToday, isTomorrow, isPast } from 'date-fns';
 import { useGrove } from '../context/useGrove';
 import { TaskItem } from '../components/TaskItem';
 import { NewTaskModal } from '../components/NewTaskModal';
+import { useToday } from '../hooks/useToday';
 
 export function Today() {
   const { tasks } = useGrove();
   const [modalOpen, setModalOpen] = useState(false);
-  const todayStr = format(new Date(), 'yyyy-MM-dd');
+  // Local day key: changes at local midnight (and is re-checked on focus), so the
+  // sections, counts, and header below recompute while the app stays open.
+  const todayStr = useToday();
 
   const { todayTasks, upcoming, overdue, inProgress, inProgressCount, doneToday, openCount } =
     useMemo(() => {
@@ -51,12 +54,10 @@ export function Today() {
       };
     }, [tasks, todayStr]);
 
-  const greeting = useMemo(() => {
-    const h = new Date().getHours();
-    if (h < 12) return 'Good morning';
-    if (h < 17) return 'Good afternoon';
-    return 'Good evening';
-  }, []);
+  // Cheap, so recomputed on every render (including the midnight day change)
+  const hour = new Date().getHours();
+  const greeting =
+    hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
   return (
     <div>
@@ -66,7 +67,7 @@ export function Today() {
             {greeting}
           </h2>
           <p className="subtitle">
-            {format(new Date(), 'EEEE, MMMM d')}. Tend what matters today
+            {format(parseISO(todayStr), 'EEEE, MMMM d')}. Tend what matters today
           </p>
         </div>
         <div className="header-actions">

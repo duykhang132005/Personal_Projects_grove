@@ -12,7 +12,7 @@ const links = [
 ];
 
 export function Layout() {
-  const { exportData, importData, resetData, withUndo } = useGrove();
+  const { exportData, importData, resetDataWithUndo, showNotice } = useGrove();
   const fileRef = useRef<HTMLInputElement>(null);
 
   function handleExport() {
@@ -34,7 +34,10 @@ export function Layout() {
       try {
         importData(String(reader.result));
       } catch {
-        alert('Could not import that file. Make sure it is a Grove JSON export.');
+        showNotice(
+          'Could not import that file. Make sure it is a Grove JSON export.',
+          'error'
+        );
       }
     };
     reader.readAsText(file);
@@ -92,7 +95,7 @@ export function Layout() {
           <button
             type="button"
             className="btn btn-ghost btn-sm"
-            onClick={() => withUndo('Sample data restored', resetData)}
+            onClick={resetDataWithUndo}
           >
             Reset sample
           </button>
