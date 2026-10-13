@@ -11,9 +11,7 @@ Nature-themed personal todo app. Built with Vite, React 19, TypeScript, React Ro
 - **Garden** : one plant grown from weekly XP (daily water + task completion)
 - **Task detail** : description, priority, due date/time, tags, links, notes, breakdowns, and mini-steps
 - **Repeating tasks** : daily, weekdays, weekly, or monthly; completing one plants the next occurrence
-- **Undo** : deletes show an Undo toast (up to 3 stacked, each undoable)
 - **Persistence** : `localStorage`, JSON export/import, and seed reset
-- **Loading splash** : shown while the app boots and React hydrates
 
 ## Requirements
 
