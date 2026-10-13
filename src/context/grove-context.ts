@@ -37,9 +37,10 @@ export interface GroveContextValue {
   deleteProjectWithUndo: (id: string) => void;
   /** Shows a toast without an Undo button, e.g. an import error. */
   showNotice: (message: string, kind?: 'info' | 'error') => void;
-  toast: ToastState | null;
-  undo: () => void;
-  dismissToast: () => void;
+  /** Visible toasts, oldest first (at most 3); each Undo toast has its own restore */
+  toasts: ToastState[];
+  undo: (id: number) => void;
+  dismissToast: (id: number) => void;
   resetData: () => void;
   /** Resets to sample data; Undo restores a full snapshot (whole-data action). */
   resetDataWithUndo: () => void;

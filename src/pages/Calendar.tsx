@@ -9,7 +9,6 @@ import {
   format,
   isSameDay,
   isSameMonth,
-  isToday,
   parseISO,
   startOfMonth,
   startOfWeek,
@@ -17,12 +16,15 @@ import {
 } from 'date-fns';
 import { useGrove } from '../context/useGrove';
 import { NewTaskModal } from '../components/NewTaskModal';
+import { useToday } from '../hooks/useToday';
 import type { Task } from '../types';
 
 type CalView = 'month' | 'week';
 
 export function Calendar() {
   const { tasks, getProject } = useGrove();
+  // Local day key; follows midnight and focus so the highlight and Today button stay current
+  const today = useToday();
   const [cursor, setCursor] = useState(new Date());
   const [view, setView] = useState<CalView>('month');
   const [modalOpen, setModalOpen] = useState(false);
@@ -71,7 +73,7 @@ export function Calendar() {
             type="button"
             className="btn btn-primary"
             onClick={() => {
-              setModalDate(format(new Date(), 'yyyy-MM-dd'));
+              setModalDate(today);
               setModalOpen(true);
             }}
           >
@@ -93,7 +95,7 @@ export function Calendar() {
         <button
           type="button"
           className="btn btn-secondary btn-sm"
-          onClick={() => setCursor(new Date())}
+          onClick={() => setCursor(parseISO(today))}
         >
           Today
         </button>
@@ -144,7 +146,7 @@ export function Calendar() {
               <div
                 key={day.toISOString()}
                 className={`month-cell${outside ? ' outside' : ''}${
-                  isToday(day) ? ' today' : ''
+                  format(day, 'yyyy-MM-dd') === today ? ' today' : ''
                 }`}
                 onDoubleClick={() => openNew(day)}
               >
@@ -184,7 +186,7 @@ export function Calendar() {
             return (
               <div
                 key={day.toISOString()}
-                className={`week-day${isToday(day) ? ' today' : ''}`}
+                className={`week-day${format(day, 'yyyy-MM-dd') === today ? ' today' : ''}`}
                 onDoubleClick={() => openNew(day)}
               >
                 <div className="week-day-header">{format(day, 'EEE')}</div>

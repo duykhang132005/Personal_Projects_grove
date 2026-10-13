@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useGrove } from '../context/useGrove';
 import { TaskItem } from '../components/TaskItem';
 import { NewTaskModal } from '../components/NewTaskModal';
+import { useNow } from '../hooks/useNow';
 
 const COLORS = ['#5a8f6b', '#7a9e6e', '#8b7355', '#6b9e8a', '#9a7b5a', '#5a7a8f'];
 const EMOJIS = ['📚', '🎵', '🌿', '🍃', '🪴', '🌻', '🪺', '🪵'];
@@ -10,6 +11,8 @@ const EMOJIS = ['📚', '🎵', '🌿', '🍃', '🪴', '🌻', '🪺', '🪵'];
 export function Projects() {
   const { projects, tasks, addProject, deleteProjectWithUndo, updateProject } =
     useGrove();
+  // Once-a-minute re-render so time-based Overdue badges in project lists stay current
+  useNow();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [creating, setCreating] = useState(false);

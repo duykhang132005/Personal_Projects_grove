@@ -4,6 +4,7 @@ import { useGrove } from '../context/useGrove';
 import { TaskItem } from '../components/TaskItem';
 import { NewTaskModal } from '../components/NewTaskModal';
 import { useToday } from '../hooks/useToday';
+import { useNow } from '../hooks/useNow';
 
 export function Today() {
   const { tasks } = useGrove();
@@ -11,6 +12,8 @@ export function Today() {
   // Local day key: changes at local midnight (and is re-checked on focus), so the
   // sections, counts, and header below recompute while the app stays open.
   const todayStr = useToday();
+  // Once-a-minute re-render so the greeting and time-based Overdue badges stay current
+  useNow();
 
   const { todayTasks, upcoming, overdue, inProgress, inProgressCount, doneToday, openCount } =
     useMemo(() => {
@@ -54,7 +57,7 @@ export function Today() {
       };
     }, [tasks, todayStr]);
 
-  // Cheap, so recomputed on every render (including the midnight day change)
+  // Cheap, so recomputed on every render (including the minute tick above)
   const hour = new Date().getHours();
   const greeting =
     hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';

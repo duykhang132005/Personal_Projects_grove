@@ -2,6 +2,12 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useGrove } from '../context/useGrove';
 import { uid } from '../utils/id';
 import { taskProgress } from '../utils/format';
+import { todayKey } from '../utils/garden';
+import {
+  RECURRENCE_OPTIONS,
+  isRecurrenceFreq,
+  recurrenceLabel,
+} from '../utils/recurrence';
 import type {
   BreakdownSection,
   MiniStep,
@@ -114,6 +120,20 @@ export function TaskDetail() {
     patch({ tags });
   }
 
+  function handleRepeat(value: string) {
+    if (!isRecurrenceFreq(value)) {
+      patch({ recurrence: undefined });
+      return;
+    }
+    patch({
+      recurrence: { ...task!.recurrence, freq: value },
+      // A repeating task needs a due date; default it to today
+      dueDate: task!.dueDate ?? todayKey(),
+    });
+  }
+
+  const nextOccurrence = task.spawnedNextId ? getTask(task.spawnedNextId) : undefined;
+
   function handleDelete() {
     deleteTaskWithUndo(task!.id);
     navigate('/list');
@@ -137,6 +157,19 @@ export function TaskDetail() {
             onChange={(e) => patch({ title: e.target.value })}
             aria-label="Task title"
           />
+          {task.recurrence && (
+            <div className="task-meta">
+              <span className="badge badge-repeat" title="Repeating task">
+                <span aria-hidden>↻ </span>
+                Repeats: {recurrenceLabel(task.recurrence)}
+              </span>
+              {nextOccurrence && (
+                <Link to={`/task/${nextOccurrence.id}`} className="btn btn-ghost btn-sm">
+                  Next occurrence →
+                </Link>
+              )}
+            </div>
+          )}
         </div>
         <div className="header-actions">
           <button type="button" className="btn btn-danger" onClick={handleDelete}>
@@ -387,6 +420,21 @@ export function TaskDetail() {
                   patch({ dueTime: e.target.value || null })
                 }
               />
+            </div>
+            <div className="form-group">
+              <label htmlFor="td-repeat">Repeat</label>
+              <select
+                id="td-repeat"
+                value={task.recurrence?.freq ?? ''}
+                onChange={(e) => handleRepeat(e.target.value)}
+              >
+                <option value="">None</option>
+                {RECURRENCE_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="form-group">
               <label htmlFor="td-tags">Tags</label>

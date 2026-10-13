@@ -24,6 +24,8 @@ import {
 import { uid } from '../utils/id';
 import { GroveContext, type ToastKind, type ToastState } from './grove-context';
 import { useToday } from '../hooks/useToday';
+import { nextDueDate } from '../utils/recurrence';
+import { format, parseISO } from 'date-fns';
 import {
   WATER_XP,
   computeTaskXpAward,
@@ -53,6 +55,33 @@ function emptyTask(title: string): Task {
   };
 }
 
+const MAX_TOASTS = 3;
+
+/**
+ * Next occurrence of a repeating task that was just completed: same content,
+ * fresh ids, unchecked steps, status todo, and no XP granted yet.
+ */
+function buildNextOccurrence(done: Task, today: string): Task {
+  const now = new Date().toISOString();
+  return {
+    ...done,
+    id: uid('task'),
+    status: 'todo',
+    dueDate: nextDueDate(done.dueDate ?? today, done.recurrence!, today),
+    tags: [...done.tags],
+    links: done.links.map((l) => ({ ...l, id: uid('link') })),
+    breakdowns: done.breakdowns.map((b) => ({
+      ...b,
+      id: uid('bd'),
+      steps: b.steps.map((s) => ({ ...s, id: uid('step'), completed: false })),
+    })),
+    createdAt: now,
+    updatedAt: now,
+    xpGranted: undefined,
+    spawnedNextId: undefined,
+  };
+}
+
 function withGarden(data: GroveData): GroveData {
   return {
     ...data,
@@ -63,10 +92,12 @@ function withGarden(data: GroveData): GroveData {
 export function GroveProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<GroveData>(() => withGarden(loadData()));
   const [ready, setReady] = useState(false);
-  const [toast, setToast] = useState<ToastState | null>(null);
-  // Restore function for the toast currently on screen (null when there is nothing to undo)
-  const undoAction = useRef<(() => void) | null>(null);
+  const [toasts, setToasts] = useState<ToastState[]>([]);
+  // Restore functions for visible Undo toasts, keyed by toast id
+  const undoActions = useRef(new Map<number, () => void>());
   const toastSeq = useRef(0);
+  // Latest data for event-time checks (the spawn notice in updateTask)
+  const dataRef = useRef(data);
   // Local day key; changes at local midnight so the garden week roll is re-checked
   const today = useToday();
 
@@ -77,10 +108,49 @@ export function GroveProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     saveData(data);
+    dataRef.current = data;
   }, [data]);
 
   const rollGarden = useCallback((garden: GardenState | undefined): GardenState => {
     return ensureGardenWeek(garden ?? createFreshGarden());
+  }, []);
+
+  // Toast stack: newest last, at most MAX_TOASTS visible. Each Undo toast keeps
+  // its own targeted restore, so back-to-back deletes can each be undone.
+  const openToast = useCallback(
+    (message: string, kind: ToastKind, restore: (() => void) | null) => {
+      toastSeq.current += 1;
+      const id = toastSeq.current;
+      if (restore) undoActions.current.set(id, restore);
+      setToasts((prev) => {
+        const next = [...prev, { id, message, kind }];
+        // Oldest toasts beyond the limit are dropped along with their Undo
+        for (const old of next.slice(0, Math.max(0, next.length - MAX_TOASTS))) {
+          undoActions.current.delete(old.id);
+        }
+        return next.slice(-MAX_TOASTS);
+      });
+    },
+    []
+  );
+
+  const showNotice = useCallback(
+    (message: string, kind: 'info' | 'error' = 'info') => {
+      openToast(message, kind, null);
+    },
+    [openToast]
+  );
+
+  const undo = useCallback((id: number) => {
+    const restore = undoActions.current.get(id);
+    undoActions.current.delete(id);
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+    restore?.();
+  }, []);
+
+  const dismissToast = useCallback((id: number) => {
+    undoActions.current.delete(id);
+    setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
   const addTask = useCallback((input: Partial<TaskInput> & { title: string }) => {
@@ -101,8 +171,28 @@ export function GroveProvider({ children }: { children: ReactNode }) {
   }, [rollGarden]);
 
   const updateTask = useCallback((id: string, patch: Partial<Task>) => {
+    // Repeating task being completed for the first time: tell the user where the next one went
+    const current = dataRef.current.tasks.find((t) => t.id === id);
+    if (
+      current &&
+      current.recurrence &&
+      !current.spawnedNextId &&
+      current.status !== 'done' &&
+      (patch.status ?? current.status) === 'done'
+    ) {
+      const today = todayKey();
+      const nextDue = nextDueDate(current.dueDate ?? today, current.recurrence, today);
+      openToast(
+        `Repeating task: next one due ${format(parseISO(nextDue), 'EEE, MMM d')}`,
+        'info',
+        null
+      );
+    }
+
     setData((prev) => {
       let garden = rollGarden(prev.garden);
+      // New occurrences of repeating tasks completed by this update
+      const spawned: Task[] = [];
       const tasks = prev.tasks.map((t) => {
         if (t.id !== id) return t;
 
@@ -141,12 +231,21 @@ export function GroveProvider({ children }: { children: ReactNode }) {
           };
         }
 
+        // Repeating task: keep this one as done history and plant the next one.
+        // spawnedNextId makes this happen once, so un-completing and re-completing
+        // the same task never creates a duplicate.
+        if (becomingDone && nextTask.recurrence && !t.spawnedNextId) {
+          const next = buildNextOccurrence(nextTask, todayKey());
+          spawned.push(next);
+          nextTask = { ...nextTask, spawnedNextId: next.id };
+        }
+
         return nextTask;
       });
 
-      return { ...prev, tasks, garden };
+      return { ...prev, tasks: [...tasks, ...spawned], garden };
     });
-  }, [rollGarden]);
+  }, [rollGarden, openToast]);
 
   const deleteTask = useCallback((id: string) => {
     setData((prev) => ({
@@ -223,41 +322,13 @@ export function GroveProvider({ children }: { children: ReactNode }) {
 
   const importData = useCallback((json: string) => {
     setData(withGarden(importJson(json)));
-    // Imported data replaces everything, so a pending Undo no longer applies
-    undoAction.current = null;
-    setToast(null);
+    // Imported data replaces everything, so pending Undo toasts no longer apply
+    undoActions.current.clear();
+    setToasts([]);
   }, []);
 
   const resetData = useCallback(() => {
     setData(withGarden(resetToSeed()));
-  }, []);
-
-  const openToast = useCallback(
-    (message: string, kind: ToastKind, restore: (() => void) | null) => {
-      undoAction.current = restore;
-      toastSeq.current += 1;
-      setToast({ id: toastSeq.current, message, kind });
-    },
-    []
-  );
-
-  const showNotice = useCallback(
-    (message: string, kind: 'info' | 'error' = 'info') => {
-      openToast(message, kind, null);
-    },
-    [openToast]
-  );
-
-  const undo = useCallback(() => {
-    const restore = undoAction.current;
-    undoAction.current = null;
-    setToast(null);
-    restore?.();
-  }, []);
-
-  const dismissToast = useCallback(() => {
-    undoAction.current = null;
-    setToast(null);
   }, []);
 
   // Targeted undo: puts back only the deleted task (same id, same position),
@@ -322,15 +393,18 @@ export function GroveProvider({ children }: { children: ReactNode }) {
     [data.projects, data.tasks, deleteProject, openToast]
   );
 
-  // today is a dependency so a new local week is picked up while the app stays open
   // Whole-data action, so a full snapshot undo is intentional here: anything
   // changed while this toast is showing is replaced by the pre-reset data.
+  // Older Undo toasts are cleared since they targeted the replaced data.
   const resetDataWithUndo = useCallback(() => {
     const snapshot = data;
     resetData();
+    undoActions.current.clear();
+    setToasts([]);
     openToast('Sample data restored', 'undo', () => setData(snapshot));
   }, [data, resetData, openToast]);
 
+  // today is a dependency so a new local week is picked up while the app stays open
   const garden = useMemo(
     () => ensureGardenWeek(data.garden ?? createFreshGarden()),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -381,7 +455,7 @@ export function GroveProvider({ children }: { children: ReactNode }) {
       deleteTaskWithUndo,
       deleteProjectWithUndo,
       showNotice,
-      toast,
+      toasts,
       undo,
       dismissToast,
       resetData,
@@ -405,7 +479,7 @@ export function GroveProvider({ children }: { children: ReactNode }) {
       deleteTaskWithUndo,
       deleteProjectWithUndo,
       showNotice,
-      toast,
+      toasts,
       undo,
       dismissToast,
       resetData,

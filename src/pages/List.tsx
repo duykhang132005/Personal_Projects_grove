@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useGrove } from '../context/useGrove';
 import { TaskItem } from '../components/TaskItem';
 import { NewTaskModal } from '../components/NewTaskModal';
+import { useNow } from '../hooks/useNow';
 import type { Status } from '../types';
 
 type GroupBy = 'status' | 'project';
@@ -11,6 +12,8 @@ const STATUSES: Status[] = ['todo', 'in-progress', 'done'];
 
 export function List() {
   const { tasks, projects } = useGrove();
+  // Once-a-minute re-render so time-based Overdue badges in the list stay current
+  useNow();
   const [params, setParams] = useSearchParams();
   const [modalOpen, setModalOpen] = useState(false);
   const groupBy = (params.get('group') as GroupBy) || 'status';

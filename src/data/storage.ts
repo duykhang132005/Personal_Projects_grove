@@ -1,6 +1,7 @@
 import type { GroveData } from '../types';
 import { createSeedData } from './seed';
 import { ensureGardenWeek, createFreshGarden } from '../utils/garden';
+import { withNormalizedRecurrence } from '../utils/recurrence';
 
 const STORAGE_KEY = 'grove-data-v1';
 
@@ -8,7 +9,8 @@ function normalizeGroveData(data: GroveData): GroveData {
   return {
     ...data,
     version: data.version ?? 1,
-    tasks: Array.isArray(data.tasks) ? data.tasks : [],
+    // Missing recurrence means "does not repeat"; malformed ones are dropped
+    tasks: Array.isArray(data.tasks) ? data.tasks.map(withNormalizedRecurrence) : [],
     projects: Array.isArray(data.projects) ? data.projects : [],
     garden: ensureGardenWeek(data.garden ?? createFreshGarden()),
   };

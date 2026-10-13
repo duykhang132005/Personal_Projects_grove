@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import type { Task, Project } from '../types';
 import { useGrove } from '../context/useGrove';
 import { formatDue, isOverdue, priorityLabel, statusLabel } from '../utils/format';
+import { recurrenceLabel } from '../utils/recurrence';
 
 interface Props {
   task: Task;
@@ -57,6 +58,12 @@ export function TaskItem({ task, showProject = true }: Props) {
             <span className="badge badge-date">
               {'📅 '}
               {due}
+            </span>
+          )}
+          {task.recurrence && (
+            <span className="badge badge-repeat" title="Repeating task">
+              <span aria-hidden>↻ </span>
+              {recurrenceLabel(task.recurrence)}
             </span>
           )}
           {task.tags.slice(0, 3).map((t) => (

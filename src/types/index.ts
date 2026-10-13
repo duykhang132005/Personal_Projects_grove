@@ -19,6 +19,14 @@ export interface TaskLink {
   url: string;
 }
 
+export type RecurrenceFreq = 'daily' | 'weekdays' | 'weekly' | 'monthly';
+
+export interface Recurrence {
+  freq: RecurrenceFreq;
+  /** Repeat every N units; missing means 1 */
+  interval?: number;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -36,6 +44,10 @@ export interface Task {
   updatedAt: string;
   /** Lifetime grant-once flag for Garden task XP */
   xpGranted?: boolean;
+  /** Optional repeat rule; missing means the task does not repeat */
+  recurrence?: Recurrence;
+  /** Id of the next occurrence created when this one was completed (spawn-once guard) */
+  spawnedNextId?: string;
 }
 
 export interface Project {
