@@ -48,6 +48,8 @@ export function loadData(): GroveData {
 }
 
 export function saveData(data: GroveData): void {
+  // Runs on every state change: also cleans recurrence (drops interval 1 and
+  // dayOfMonth on non-monthly rules) before anything is persisted
   const normalized = normalizeGroveData(data);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
 }

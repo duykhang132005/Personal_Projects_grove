@@ -99,6 +99,8 @@ export function GroveProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastState[]>([]);
   // Restore functions for visible Undo toasts, keyed by toast id
   const undoActions = useRef(new Map<number, () => void>());
+  // Extra toast actions (e.g. Open after a task delete), keyed by toast id
+  const openActions = useRef(new Map<number, () => void>());
   const toastSeq = useRef(0);
   // Latest data for event-time checks (the spawn notice in updateTask)
   const dataRef = useRef(data);
@@ -122,15 +124,25 @@ export function GroveProvider({ children }: { children: ReactNode }) {
   // Toast stack: newest last, at most MAX_TOASTS visible. Each Undo toast keeps
   // its own targeted restore, so back-to-back deletes can each be undone.
   const openToast = useCallback(
-    (message: string, kind: ToastKind, restore: (() => void) | null) => {
+    (
+      message: string,
+      kind: ToastKind,
+      restore: (() => void) | null,
+      action?: { label: string; ariaLabel: string; run: () => void }
+    ) => {
       toastSeq.current += 1;
       const id = toastSeq.current;
       if (restore) undoActions.current.set(id, restore);
+      if (action) openActions.current.set(id, action.run);
       setToasts((prev) => {
-        const next = [...prev, { id, message, kind }];
+        const next: ToastState[] = [
+          ...prev,
+          { id, message, kind, actionLabel: action?.label, actionAriaLabel: action?.ariaLabel },
+        ];
         // Oldest toasts beyond the limit are dropped along with their Undo
         for (const old of next.slice(0, Math.max(0, next.length - MAX_TOASTS))) {
           undoActions.current.delete(old.id);
+          openActions.current.delete(old.id);
         }
         return next.slice(-MAX_TOASTS);
       });
@@ -148,13 +160,26 @@ export function GroveProvider({ children }: { children: ReactNode }) {
   const undo = useCallback((id: number) => {
     const restore = undoActions.current.get(id);
     undoActions.current.delete(id);
+    openActions.current.delete(id);
     setToasts((prev) => prev.filter((t) => t.id !== id));
     restore?.();
   }, []);
 
   const dismissToast = useCallback((id: number) => {
     undoActions.current.delete(id);
+    openActions.current.delete(id);
     setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
+  // Extra action: restore first if Undo is still pending, then run it (e.g. navigate)
+  const runToastAction = useCallback((id: number) => {
+    const restore = undoActions.current.get(id);
+    const run = openActions.current.get(id);
+    undoActions.current.delete(id);
+    openActions.current.delete(id);
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+    restore?.();
+    run?.();
   }, []);
 
   const addTask = useCallback((input: Partial<TaskInput> & { title: string }) => {
@@ -328,6 +353,7 @@ export function GroveProvider({ children }: { children: ReactNode }) {
     setData(withGarden(importJson(json)));
     // Imported data replaces everything, so pending Undo toasts no longer apply
     undoActions.current.clear();
+    openActions.current.clear();
     setToasts([]);
   }, []);
 
@@ -338,19 +364,30 @@ export function GroveProvider({ children }: { children: ReactNode }) {
   // Targeted undo: puts back only the deleted task (same id, same position),
   // so XP and edits made while the toast is showing are kept.
   const deleteTaskWithUndo = useCallback(
-    (id: string) => {
+    (id: string, onOpen?: (id: string) => void) => {
       const index = data.tasks.findIndex((t) => t.id === id);
       if (index === -1) return;
       const removed = data.tasks[index];
       deleteTask(id);
-      openToast('Task deleted', 'undo', () => {
-        setData((prev) => {
-          if (prev.tasks.some((t) => t.id === removed.id)) return prev;
-          const tasks = [...prev.tasks];
-          tasks.splice(Math.min(index, tasks.length), 0, removed);
-          return { ...prev, tasks };
-        });
-      });
+      openToast(
+        'Task deleted',
+        'undo',
+        () => {
+          setData((prev) => {
+            if (prev.tasks.some((t) => t.id === removed.id)) return prev;
+            const tasks = [...prev.tasks];
+            tasks.splice(Math.min(index, tasks.length), 0, removed);
+            return { ...prev, tasks };
+          });
+        },
+        onOpen
+          ? {
+              label: 'Open',
+              ariaLabel: `Restore and open “${removed.title}”`,
+              run: () => onOpen(removed.id),
+            }
+          : undefined
+      );
     },
     [data.tasks, deleteTask, openToast]
   );
@@ -404,6 +441,7 @@ export function GroveProvider({ children }: { children: ReactNode }) {
     const snapshot = data;
     resetData();
     undoActions.current.clear();
+    openActions.current.clear();
     setToasts([]);
     openToast('Sample data restored', 'undo', () => setData(snapshot));
   }, [data, resetData, openToast]);
@@ -462,6 +500,7 @@ export function GroveProvider({ children }: { children: ReactNode }) {
       toasts,
       undo,
       dismissToast,
+      runToastAction,
       resetData,
       resetDataWithUndo,
     }),
@@ -486,6 +525,7 @@ export function GroveProvider({ children }: { children: ReactNode }) {
       toasts,
       undo,
       dismissToast,
+      runToastAction,
       resetData,
       resetDataWithUndo,
     ]

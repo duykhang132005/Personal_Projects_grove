@@ -140,7 +140,8 @@ export function TaskDetail() {
   const nextOccurrence = task.spawnedNextId ? getTask(task.spawnedNextId) : undefined;
 
   function handleDelete() {
-    deleteTaskWithUndo(task!.id);
+    // The toast's Open button restores the task and comes back here
+    deleteTaskWithUndo(task!.id, (taskId) => navigate(`/task/${taskId}`));
     navigate('/list');
   }
 

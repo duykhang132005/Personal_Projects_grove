@@ -12,10 +12,11 @@ interface ItemProps {
   paused: boolean;
   onUndo: (id: number) => void;
   onDismiss: (id: number) => void;
+  onAction: (id: number) => void;
 }
 
 /** One toast with its own auto-dismiss timer, which stops while `paused`. */
-function ToastItem({ toast, paused, onUndo, onDismiss }: ItemProps) {
+function ToastItem({ toast, paused, onUndo, onDismiss, onAction }: ItemProps) {
   const remaining = useRef(toast.kind === 'error' ? ERROR_TOAST_MS : TOAST_MS);
 
   useEffect(() => {
@@ -40,6 +41,16 @@ function ToastItem({ toast, paused, onUndo, onDismiss }: ItemProps) {
           Undo
         </button>
       )}
+      {toast.actionLabel && (
+        <button
+          type="button"
+          className="toast-undo"
+          onClick={() => onAction(toast.id)}
+          aria-label={toast.actionAriaLabel}
+        >
+          {toast.actionLabel}
+        </button>
+      )}
       <button
         type="button"
         className="toast-close"
@@ -57,7 +68,7 @@ function ToastItem({ toast, paused, onUndo, onDismiss }: ItemProps) {
  * Timers pause while the pointer is over the stack or focus is inside it.
  */
 export function UndoToast() {
-  const { toasts, undo, dismissToast } = useGrove();
+  const { toasts, undo, dismissToast, runToastAction } = useGrove();
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
 
@@ -87,6 +98,7 @@ export function UndoToast() {
           paused={hovered || focused}
           onUndo={undo}
           onDismiss={dismissToast}
+          onAction={runToastAction}
         />
       ))}
     </div>

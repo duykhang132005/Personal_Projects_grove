@@ -13,6 +13,10 @@ export interface ToastState {
   id: number;
   message: string;
   kind: ToastKind;
+  /** Optional second button next to Undo, e.g. "Open" */
+  actionLabel?: string;
+  /** Accessible name for that button */
+  actionAriaLabel?: string;
 }
 
 export interface GroveContextValue {
@@ -32,7 +36,8 @@ export interface GroveContextValue {
   exportData: () => string;
   importData: (json: string) => void;
   /** Deletes a task; the toast's Undo puts back just that task. */
-  deleteTaskWithUndo: (id: string) => void;
+  /** onOpen adds an "Open" button that restores the task (if needed) and calls onOpen(id) */
+  deleteTaskWithUndo: (id: string, onOpen?: (id: string) => void) => void;
   /** Deletes a project; the toast's Undo restores it and re-attaches its tasks. */
   deleteProjectWithUndo: (id: string) => void;
   /** Shows a toast without an Undo button, e.g. an import error. */
@@ -41,6 +46,8 @@ export interface GroveContextValue {
   toasts: ToastState[];
   undo: (id: number) => void;
   dismissToast: (id: number) => void;
+  /** Runs a toast's extra action (after its Undo, if still pending) and closes it */
+  runToastAction: (id: number) => void;
   resetData: () => void;
   /** Resets to sample data; Undo restores a full snapshot (whole-data action). */
   resetDataWithUndo: () => void;
