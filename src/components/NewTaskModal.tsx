@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGrove } from '../context/useGrove';
-import type { Priority, RecurrenceFreq } from '../types';
-import { RECURRENCE_OPTIONS, isRecurrenceFreq } from '../utils/recurrence';
+import type { Priority, Recurrence } from '../types';
+import { withDayOfMonth } from '../utils/recurrence';
 import { todayKey } from '../utils/garden';
+import { RepeatFields } from './RepeatFields';
 
 interface Props {
   open: boolean;
@@ -24,7 +25,7 @@ export function NewTaskModal({
   const [projectId, setProjectId] = useState<string>(defaultProjectId ?? '');
   const [dueDate, setDueDate] = useState(defaultDueDate ?? '');
   const [priority, setPriority] = useState<Priority>('medium');
-  const [repeat, setRepeat] = useState<RecurrenceFreq | ''>('');
+  const [repeat, setRepeat] = useState<Recurrence | undefined>(undefined);
 
   useEffect(() => {
     if (!open) return;
@@ -40,19 +41,21 @@ export function NewTaskModal({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim()) return;
+    // A repeating task needs a due date; fall back to today
+    const due = dueDate || (repeat ? todayKey() : null);
     const task = addTask({
       title: title.trim(),
       projectId: projectId || null,
-      // A repeating task needs a due date; fall back to today
-      dueDate: dueDate || (repeat ? todayKey() : null),
+      dueDate: due,
       priority,
-      recurrence: repeat ? { freq: repeat } : undefined,
+      // Monthly takes its day of month from the due date
+      recurrence: repeat && due ? withDayOfMonth(repeat, due, true) : undefined,
     });
     setTitle('');
     setProjectId(defaultProjectId ?? '');
     setDueDate(defaultDueDate ?? '');
     setPriority('medium');
-    setRepeat('');
+    setRepeat(undefined);
     onClose();
     navigate(`/task/${task.id}`);
   }
@@ -120,26 +123,15 @@ export function NewTaskModal({
                 onChange={(e) => setDueDate(e.target.value)}
               />
             </div>
-            <div className="form-group">
-              <label htmlFor="nt-repeat">Repeat</label>
-              <select
-                id="nt-repeat"
-                value={repeat}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setRepeat(isRecurrenceFreq(value) ? value : '');
-                  // Repeating needs a due date; default it to today
-                  if (value && !dueDate) setDueDate(todayKey());
-                }}
-              >
-                <option value="">None</option>
-                {RECURRENCE_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <RepeatFields
+              idPrefix="nt"
+              value={repeat}
+              onChange={(next) => {
+                setRepeat(next);
+                // Repeating needs a due date; default it to today
+                if (next && !dueDate) setDueDate(todayKey());
+              }}
+            />
           </div>
           <div className="modal-actions">
             <button type="button" className="btn btn-secondary" onClick={onClose}>

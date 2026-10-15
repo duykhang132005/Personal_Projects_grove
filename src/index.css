@@ -566,6 +566,32 @@ button {
   letter-spacing: 0.04em;
 }
 
+/* "Every N units" row under a Repeat select */
+.repeat-interval {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+  font-size: 0.9rem;
+  color: var(--earth);
+}
+
+.form-group .repeat-interval label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--earth);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.repeat-interval input {
+  width: 4.5rem;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: white;
+}
+
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;

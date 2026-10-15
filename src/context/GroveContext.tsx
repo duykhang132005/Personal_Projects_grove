@@ -24,7 +24,7 @@ import {
 import { uid } from '../utils/id';
 import { GroveContext, type ToastKind, type ToastState } from './grove-context';
 import { useToday } from '../hooks/useToday';
-import { nextDueDate } from '../utils/recurrence';
+import { nextDueDate, withDayOfMonth } from '../utils/recurrence';
 import { format, parseISO } from 'date-fns';
 import {
   WATER_XP,
@@ -63,11 +63,15 @@ const MAX_TOASTS = 3;
  */
 function buildNextOccurrence(done: Task, today: string): Task {
   const now = new Date().toISOString();
+  const base = done.dueDate ?? today;
+  // Carries dayOfMonth forward (and pins it for old monthly data that lacks it)
+  const recurrence = withDayOfMonth(done.recurrence!, base);
   return {
     ...done,
     id: uid('task'),
     status: 'todo',
-    dueDate: nextDueDate(done.dueDate ?? today, done.recurrence!, today),
+    dueDate: nextDueDate(base, recurrence, today),
+    recurrence,
     tags: [...done.tags],
     links: done.links.map((l) => ({ ...l, id: uid('link') })),
     breakdowns: done.breakdowns.map((b) => ({

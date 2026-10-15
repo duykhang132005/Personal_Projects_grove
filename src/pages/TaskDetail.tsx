@@ -3,15 +3,13 @@ import { useGrove } from '../context/useGrove';
 import { uid } from '../utils/id';
 import { taskProgress } from '../utils/format';
 import { todayKey } from '../utils/garden';
-import {
-  RECURRENCE_OPTIONS,
-  isRecurrenceFreq,
-  recurrenceLabel,
-} from '../utils/recurrence';
+import { recurrenceLabel, withDayOfMonth } from '../utils/recurrence';
+import { RepeatFields } from '../components/RepeatFields';
 import type {
   BreakdownSection,
   MiniStep,
   Priority,
+  Recurrence,
   Status,
   TaskLink,
 } from '../types';
@@ -120,15 +118,22 @@ export function TaskDetail() {
     patch({ tags });
   }
 
-  function handleRepeat(value: string) {
-    if (!isRecurrenceFreq(value)) {
+  function handleRepeat(next: Recurrence | undefined) {
+    if (!next) {
       patch({ recurrence: undefined });
       return;
     }
+    // A repeating task needs a due date; default it to today
+    const due = task!.dueDate ?? todayKey();
+    patch({ recurrence: withDayOfMonth(next, due), dueDate: due });
+  }
+
+  function handleDueDate(value: string) {
+    const recurrence = task!.recurrence;
     patch({
-      recurrence: { ...task!.recurrence, freq: value },
-      // A repeating task needs a due date; default it to today
-      dueDate: task!.dueDate ?? todayKey(),
+      dueDate: value || null,
+      // A new due date also moves the monthly day of month
+      ...(recurrence && value ? { recurrence: withDayOfMonth(recurrence, value, true) } : {}),
     });
   }
 
@@ -405,9 +410,7 @@ export function TaskDetail() {
                 id="td-due"
                 type="date"
                 value={task.dueDate ?? ''}
-                onChange={(e) =>
-                  patch({ dueDate: e.target.value || null })
-                }
+                onChange={(e) => handleDueDate(e.target.value)}
               />
             </div>
             <div className="form-group">
@@ -421,21 +424,7 @@ export function TaskDetail() {
                 }
               />
             </div>
-            <div className="form-group">
-              <label htmlFor="td-repeat">Repeat</label>
-              <select
-                id="td-repeat"
-                value={task.recurrence?.freq ?? ''}
-                onChange={(e) => handleRepeat(e.target.value)}
-              >
-                <option value="">None</option>
-                {RECURRENCE_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <RepeatFields idPrefix="td" value={task.recurrence} onChange={handleRepeat} />
             <div className="form-group">
               <label htmlFor="td-tags">Tags</label>
               <input

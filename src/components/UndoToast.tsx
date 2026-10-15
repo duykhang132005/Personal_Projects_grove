@@ -1,23 +1,36 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useGrove } from '../context/useGrove';
 import type { ToastState } from '../context/grove-context';
 
 const TOAST_MS = 6000;
 const ERROR_TOAST_MS = 8000;
+/** Minimum time left after a pause ends, so a toast never vanishes the instant you leave it */
+const RESUME_MIN_MS = 1500;
 
 interface ItemProps {
   toast: ToastState;
+  paused: boolean;
   onUndo: (id: number) => void;
   onDismiss: (id: number) => void;
 }
 
-/** One toast with its own auto-dismiss timer. */
-function ToastItem({ toast, onUndo, onDismiss }: ItemProps) {
+/** One toast with its own auto-dismiss timer, which stops while `paused`. */
+function ToastItem({ toast, paused, onUndo, onDismiss }: ItemProps) {
+  const remaining = useRef(toast.kind === 'error' ? ERROR_TOAST_MS : TOAST_MS);
+
   useEffect(() => {
-    const ms = toast.kind === 'error' ? ERROR_TOAST_MS : TOAST_MS;
-    const t = window.setTimeout(() => onDismiss(toast.id), ms);
-    return () => window.clearTimeout(t);
-  }, [toast.id, toast.kind, onDismiss]);
+    if (paused) return;
+    const started = Date.now();
+    const t = window.setTimeout(
+      () => onDismiss(toast.id),
+      Math.max(remaining.current, RESUME_MIN_MS)
+    );
+    return () => {
+      window.clearTimeout(t);
+      // Keep the time left so the timer resumes instead of restarting
+      remaining.current -= Date.now() - started;
+    };
+  }, [paused, toast.id, onDismiss]);
 
   return (
     <div className={`toast toast-${toast.kind}`}>
@@ -39,14 +52,42 @@ function ToastItem({ toast, onUndo, onDismiss }: ItemProps) {
   );
 }
 
-/** Shared toast stack: Undo toasts for deletes plus plain info / error notices. */
+/**
+ * Shared toast stack: Undo toasts for deletes plus plain info / error notices.
+ * Timers pause while the pointer is over the stack or focus is inside it.
+ */
 export function UndoToast() {
   const { toasts, undo, dismissToast } = useGrove();
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+
+  // Once the stack is empty nothing can fire leave or blur, so reset here
+  if (toasts.length === 0 && (hovered || focused)) {
+    setHovered(false);
+    setFocused(false);
+  }
 
   return (
-    <div className="toast-region" role="status" aria-live="polite">
+    <div
+      className="toast-region"
+      role="status"
+      aria-live="polite"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onFocus={() => setFocused(true)}
+      onBlur={(e) => {
+        // Still focused if focus just moved to another button in the stack
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocused(false);
+      }}
+    >
       {toasts.map((t) => (
-        <ToastItem key={t.id} toast={t} onUndo={undo} onDismiss={dismissToast} />
+        <ToastItem
+          key={t.id}
+          toast={t}
+          paused={hovered || focused}
+          onUndo={undo}
+          onDismiss={dismissToast}
+        />
       ))}
     </div>
   );

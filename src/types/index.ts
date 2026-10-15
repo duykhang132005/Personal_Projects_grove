@@ -25,6 +25,8 @@ export interface Recurrence {
   freq: RecurrenceFreq;
   /** Repeat every N units; missing means 1 */
   interval?: number;
+  /** Monthly only: the day of month to land on (1..31), clamped to short months */
+  dayOfMonth?: number;
 }
 
 export interface Task {
