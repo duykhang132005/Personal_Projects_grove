@@ -1,0 +1,22 @@
+# Line endings: normalize text to LF in the repo, check out as CRLF
+* text=auto eol=crlf
+
+# Binary assets: never touch their bytes
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.avif binary
+*.bmp binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.eot binary
+*.pdf binary
+*.zip binary
+*.mp3 binary
+*.mp4 binary
+*.wav binary

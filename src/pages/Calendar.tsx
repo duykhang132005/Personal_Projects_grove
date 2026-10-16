@@ -72,6 +72,8 @@ export function Calendar() {
           <button
             type="button"
             className="btn btn-primary"
+            title="New task (N)"
+            aria-keyshortcuts="n"
             onClick={() => {
               setModalDate(today);
               setModalOpen(true);

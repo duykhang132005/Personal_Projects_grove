@@ -1,7 +1,18 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useGrove } from '../context/useGrove';
 import { UndoToast } from './UndoToast';
+import { NewTaskModal } from './NewTaskModal';
+
+/** True when a key press should go to a form field instead of a shortcut */
+function isTypingTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  return (
+    target.isContentEditable ||
+    target.closest('input, textarea, select, [contenteditable=""], [contenteditable="true"]') !==
+      null
+  );
+}
 
 const links = [
   { to: '/', label: 'Today', icon: '☀', end: true },
@@ -14,6 +25,23 @@ const links = [
 export function Layout() {
   const { exportData, importData, resetDataWithUndo, showNotice } = useGrove();
   const fileRef = useRef<HTMLInputElement>(null);
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
+
+  // Global "n" shortcut: opens the New task popup from any page
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key !== 'n' && e.key !== 'N') return;
+      if (e.repeat || e.isComposing) return;
+      if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+      if (isTypingTarget(e.target)) return;
+      // Any open dialog (page popups included) keeps the keyboard
+      if (document.querySelector('[role="dialog"]')) return;
+      e.preventDefault();
+      setQuickAddOpen(true);
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   function handleExport() {
     const json = exportData();
@@ -105,6 +133,7 @@ export function Layout() {
         <Outlet />
       </main>
       <UndoToast />
+      <NewTaskModal open={quickAddOpen} onClose={() => setQuickAddOpen(false)} />
     </div>
   );
 }

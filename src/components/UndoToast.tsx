@@ -4,6 +4,18 @@ import type { ToastState } from '../context/grove-context';
 
 const TOAST_MS = 6000;
 const ERROR_TOAST_MS = 8000;
+/** Touch screens (no hover, so no hover pause): give people longer to react */
+const TOUCH_TOAST_MS = 10000;
+const TOUCH_ERROR_TOAST_MS = 12000;
+
+function baseTimeout(kind: ToastState['kind']): number {
+  const touch =
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(hover: none)').matches;
+  if (kind === 'error') return touch ? TOUCH_ERROR_TOAST_MS : ERROR_TOAST_MS;
+  return touch ? TOUCH_TOAST_MS : TOAST_MS;
+}
 /** Minimum time left after a pause ends, so a toast never vanishes the instant you leave it */
 const RESUME_MIN_MS = 1500;
 
@@ -17,7 +29,7 @@ interface ItemProps {
 
 /** One toast with its own auto-dismiss timer, which stops while `paused`. */
 function ToastItem({ toast, paused, onUndo, onDismiss, onAction }: ItemProps) {
-  const remaining = useRef(toast.kind === 'error' ? ERROR_TOAST_MS : TOAST_MS);
+  const remaining = useRef(baseTimeout(toast.kind));
 
   useEffect(() => {
     if (paused) return;

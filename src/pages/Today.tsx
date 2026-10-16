@@ -77,6 +77,8 @@ export function Today() {
           <button
             type="button"
             className="btn btn-primary"
+            title="New task (N)"
+            aria-keyshortcuts="n"
             onClick={() => setModalOpen(true)}
           >
             + New task
