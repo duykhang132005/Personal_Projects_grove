@@ -13,12 +13,16 @@ interface Props {
   defaultDueDate?: string | null;
 }
 
-export function NewTaskModal({
-  open,
-  onClose,
-  defaultProjectId = null,
-  defaultDueDate = null,
-}: Props) {
+/**
+ * The form is mounted only while open, so every open starts from the current
+ * defaults and nothing typed before a cancel or close comes back.
+ */
+export function NewTaskModal(props: Props) {
+  if (!props.open) return null;
+  return <NewTaskForm {...props} />;
+}
+
+function NewTaskForm({ onClose, defaultProjectId = null, defaultDueDate = null }: Props) {
   const { addTask, projects } = useGrove();
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
@@ -28,15 +32,12 @@ export function NewTaskModal({
   const [repeat, setRepeat] = useState<Recurrence | undefined>(undefined);
 
   useEffect(() => {
-    if (!open) return;
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') onClose();
     }
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [open, onClose]);
-
-  if (!open) return null;
+  }, [onClose]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -51,11 +52,7 @@ export function NewTaskModal({
       // Monthly takes its day of month from the due date
       recurrence: repeat && due ? withDayOfMonth(repeat, due, true) : undefined,
     });
-    setTitle('');
-    setProjectId(defaultProjectId ?? '');
-    setDueDate(defaultDueDate ?? '');
-    setPriority('medium');
-    setRepeat(undefined);
+    // Closing unmounts the form, which clears it for next time
     onClose();
     navigate(`/task/${task.id}`);
   }

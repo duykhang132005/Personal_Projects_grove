@@ -1,8 +1,32 @@
-import { NavLink, Outlet } from 'react-router-dom';
-import { useEffect, useRef, useState } from 'react';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useGrove } from '../context/useGrove';
 import { UndoToast } from './UndoToast';
 import { NewTaskModal } from './NewTaskModal';
+import { ShortcutHelp } from './ShortcutHelp';
+import { todayKey } from '../utils/garden';
+
+interface QuickAddDefaults {
+  projectId: string | null;
+  dueDate: string | null;
+}
+
+/** Same defaults the page "+ New task" buttons use, picked from the current route. */
+function quickAddDefaults(
+  pathname: string,
+  search: string,
+  hasProject: (id: string) => boolean
+): QuickAddDefaults {
+  if (pathname === '/' || pathname === '/calendar') {
+    return { projectId: null, dueDate: todayKey() };
+  }
+  // Projects detail (?project=id) and the List project filter (?project=id)
+  const project = new URLSearchParams(search).get('project');
+  if ((pathname === '/projects' || pathname === '/list') && project && hasProject(project)) {
+    return { projectId: project, dueDate: null };
+  }
+  return { projectId: null, dueDate: null };
+}
 
 /** True when a key press should go to a form field instead of a shortcut */
 function isTypingTarget(target: EventTarget | null): boolean {
@@ -25,23 +49,37 @@ const links = [
 export function Layout() {
   const { exportData, importData, resetDataWithUndo, showNotice } = useGrove();
   const fileRef = useRef<HTMLInputElement>(null);
-  const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const { getProject } = useGrove();
+  const location = useLocation();
+  // Defaults for the shortcut popup; null while it is closed
+  const [quickAdd, setQuickAdd] = useState<QuickAddDefaults | null>(null);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const closeQuickAdd = useCallback(() => setQuickAdd(null), []);
+  const closeHelp = useCallback(() => setHelpOpen(false), []);
 
-  // Global "n" shortcut: opens the New task popup from any page
+  // Global shortcuts: "n" opens New task (with page defaults), "?" opens help
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key !== 'n' && e.key !== 'N') return;
+      const isNew = (e.key === 'n' || e.key === 'N') && !e.shiftKey;
+      const isHelp = e.key === '?';
+      if (!isNew && !isHelp) return;
       if (e.repeat || e.isComposing) return;
-      if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
       if (isTypingTarget(e.target)) return;
       // Any open dialog (page popups included) keeps the keyboard
       if (document.querySelector('[role="dialog"]')) return;
       e.preventDefault();
-      setQuickAddOpen(true);
+      if (isNew) {
+        setQuickAdd(
+          quickAddDefaults(location.pathname, location.search, (id) => Boolean(getProject(id)))
+        );
+      } else {
+        setHelpOpen(true);
+      }
     }
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [location.pathname, location.search, getProject]);
 
   function handleExport() {
     const json = exportData();
@@ -123,6 +161,14 @@ export function Layout() {
           <button
             type="button"
             className="btn btn-ghost btn-sm"
+            onClick={() => setHelpOpen(true)}
+            aria-keyshortcuts="?"
+          >
+            Shortcuts <kbd aria-hidden>?</kbd>
+          </button>
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
             onClick={resetDataWithUndo}
           >
             Reset sample
@@ -133,7 +179,13 @@ export function Layout() {
         <Outlet />
       </main>
       <UndoToast />
-      <NewTaskModal open={quickAddOpen} onClose={() => setQuickAddOpen(false)} />
+      <NewTaskModal
+        open={quickAdd !== null}
+        onClose={closeQuickAdd}
+        defaultProjectId={quickAdd?.projectId ?? null}
+        defaultDueDate={quickAdd?.dueDate ?? null}
+      />
+      <ShortcutHelp open={helpOpen} onClose={closeHelp} />
     </div>
   );
 }

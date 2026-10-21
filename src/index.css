@@ -976,6 +976,53 @@ textarea {
   margin-top: 1.25rem;
 }
 
+/* Keyboard shortcut help */
+.shortcut-help {
+  max-width: 360px;
+}
+
+.shortcut-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.shortcut-row dt {
+  min-width: 3.25rem;
+}
+
+.shortcut-row dd {
+  color: var(--bark);
+}
+
+.shortcut-help kbd,
+.sidebar-footer kbd {
+  display: inline-block;
+  min-width: 1.6rem;
+  padding: 0.1rem 0.45rem;
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  background: white;
+  color: var(--leaf-dark);
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.shortcut-note {
+  margin-top: 1rem;
+  font-size: 0.8rem;
+  color: var(--earth);
+}
+
 /* Undo toast */
 .toast-region {
   position: fixed;

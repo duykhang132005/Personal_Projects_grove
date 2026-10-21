@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useGrove } from '../context/useGrove';
 import { TaskItem } from '../components/TaskItem';
 import { NewTaskModal } from '../components/NewTaskModal';
@@ -13,7 +13,13 @@ export function Projects() {
     useGrove();
   // Once-a-minute re-render so time-based Overdue badges in project lists stay current
   useNow();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  // Selected project lives in the URL (?project=id) so the "n" shortcut, links,
+  // and the browser Back button all know which project is open
+  const [params, setParams] = useSearchParams();
+  const selectedId = params.get('project');
+  function setSelectedId(id: string | null) {
+    setParams(id ? { project: id } : {});
+  }
   const [modalOpen, setModalOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState('');
