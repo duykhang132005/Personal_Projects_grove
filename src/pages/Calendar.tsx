@@ -61,6 +61,25 @@ export function Calendar() {
     setModalOpen(true);
   }
 
+  function addButton(day: Date) {
+    const label = `Add task on ${format(day, 'EEE, MMM d')}`;
+    return (
+      <button
+        type="button"
+        className="cal-add"
+        aria-label={label}
+        title={label}
+        onClick={(e) => {
+          e.stopPropagation();
+          openNew(day);
+        }}
+        onDoubleClick={(e) => e.stopPropagation()}
+      >
+        <span aria-hidden>+</span>
+      </button>
+    );
+  }
+
   return (
     <div>
       <div className="page-header">
@@ -153,6 +172,7 @@ export function Calendar() {
                 onDoubleClick={() => openNew(day)}
               >
                 <div className="day-num">{format(day, 'd')}</div>
+                {addButton(day)}
                 {items.slice(0, 3).map((t) => {
                   const proj = t.projectId ? getProject(t.projectId) : undefined;
                   return (
@@ -193,6 +213,7 @@ export function Calendar() {
               >
                 <div className="week-day-header">{format(day, 'EEE')}</div>
                 <div className="week-day-num">{format(day, 'd')}</div>
+                {addButton(day)}
                 <div className="task-list">
                   {items.length === 0 && (
                     <p style={{ fontSize: '0.8rem', color: 'var(--earth)' }}>
@@ -223,7 +244,7 @@ export function Calendar() {
       </div>
 
       <p style={{ marginTop: '1rem', fontSize: '0.8rem', color: 'var(--earth)' }}>
-        Tip: double-click a day to plant a task there.
+        Tip: use a day's + button, or double-click the day, to plant a task there.
       </p>
 
       <NewTaskModal

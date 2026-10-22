@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useGrove } from '../context/useGrove';
 import { UndoToast } from './UndoToast';
@@ -51,18 +51,20 @@ export function Layout() {
   const fileRef = useRef<HTMLInputElement>(null);
   const { getProject } = useGrove();
   const location = useLocation();
+  const navigate = useNavigate();
   // Defaults for the shortcut popup; null while it is closed
   const [quickAdd, setQuickAdd] = useState<QuickAddDefaults | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
   const closeQuickAdd = useCallback(() => setQuickAdd(null), []);
   const closeHelp = useCallback(() => setHelpOpen(false), []);
 
-  // Global shortcuts: "n" opens New task (with page defaults), "?" opens help
+  // Global shortcuts: "n" opens New task (with page defaults), "/" focuses List search, "?" opens help
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       const isNew = (e.key === 'n' || e.key === 'N') && !e.shiftKey;
       const isHelp = e.key === '?';
-      if (!isNew && !isHelp) return;
+      const isSearch = e.key === '/';
+      if (!isNew && !isHelp && !isSearch) return;
       if (e.repeat || e.isComposing) return;
       if (e.ctrlKey || e.metaKey || e.altKey) return;
       if (isTypingTarget(e.target)) return;
@@ -73,13 +75,17 @@ export function Layout() {
         setQuickAdd(
           quickAddDefaults(location.pathname, location.search, (id) => Boolean(getProject(id)))
         );
+      } else if (isSearch) {
+        const box = document.getElementById('list-search');
+        if (location.pathname === '/list' && box) box.focus();
+        else navigate({ pathname: '/list', search: location.pathname === '/list' ? location.search : '' }, { state: { focusSearch: true } });
       } else {
         setHelpOpen(true);
       }
     }
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [location.pathname, location.search, getProject]);
+  }, [location.pathname, location.search, getProject, navigate]);
 
   function handleExport() {
     const json = exportData();

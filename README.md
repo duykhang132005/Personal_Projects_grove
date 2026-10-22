@@ -75,12 +75,13 @@ src/
   App.tsx                 Routes and loading splash
   main.tsx                Entry
   index.css               Theme and layout styles (including calendar grid)
-  components/             Layout, LoadingScreen, TaskItem, NewTaskModal
+  components/             Layout, LoadingScreen, TaskItem, NewTaskModal, UndoToast, RepeatFields, ShortcutHelp
   context/GroveContext.tsx  App state and persistence API
   data/                   storage.ts (localStorage) and seed.ts
+  hooks/                  useToday (local day key, midnight refresh), useNow (minute tick)
   pages/                  Today, Calendar, List, Projects, Garden, TaskDetail
   types/                  Shared TypeScript types
-  utils/                  Helpers (ids, formatting)
+  utils/                  Helpers (ids, formatting, garden XP, recurrence for repeating tasks)
 public/                   Static assets (favicon, icons)
 ```
 

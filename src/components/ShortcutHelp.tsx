@@ -7,8 +7,9 @@ interface Props {
 
 const SHORTCUTS = [
   { keys: 'N', label: 'New task' },
+  { keys: '/', label: 'Search task titles (opens List)' },
   { keys: '?', label: 'Show this help' },
-  { keys: 'Esc', label: 'Close a dialog' },
+  { keys: 'Esc', label: 'Close a dialog, or clear the search box' },
 ];
 
 /** Small keyboard help panel; mounted only while open. */

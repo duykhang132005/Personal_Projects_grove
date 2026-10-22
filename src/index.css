@@ -890,6 +890,58 @@ textarea {
   margin-bottom: 0.65rem;
 }
 
+/* Per-day add button (month and week views) */
+.month-cell,
+.week-day {
+  position: relative;
+}
+
+.cal-add {
+  position: absolute;
+  top: 0.3rem;
+  right: 0.3rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--leaf-dark);
+  font-weight: 700;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.month-cell:hover .cal-add,
+.week-day:hover .cal-add,
+.month-cell.today .cal-add,
+.week-day.today .cal-add,
+.cal-add:focus-visible {
+  opacity: 1;
+}
+
+.cal-add:hover {
+  background: var(--leaf);
+  border-color: var(--leaf);
+  color: white;
+}
+
+.cal-add:focus-visible {
+  outline: 2px solid var(--leaf);
+  outline-offset: 1px;
+}
+
+@media (hover: none) {
+  .cal-add {
+    opacity: 1;
+  }
+}
+
 /* Projects */
 .project-grid {
   display: grid;
@@ -1146,6 +1198,23 @@ textarea {
   background: var(--leaf);
   color: white;
   border-color: var(--leaf);
+}
+
+.list-search {
+  flex: 1 1 14rem;
+  max-width: 22rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: white;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--bark);
+}
+
+.list-search:focus-visible {
+  outline: 2px solid var(--leaf);
+  outline-offset: 1px;
 }
 
 .tags-input-row {

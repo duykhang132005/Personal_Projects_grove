@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import { useGrove } from '../context/useGrove';
 import { TaskItem } from '../components/TaskItem';
 import { NewTaskModal } from '../components/NewTaskModal';
@@ -19,16 +19,34 @@ export function List() {
   const groupBy = (params.get('group') as GroupBy) || 'status';
   const filterProject = params.get('project');
   const filterStatus = params.get('status') as Status | null;
+  const query = params.get('q') ?? '';
+  const searchRef = useRef<HTMLInputElement>(null);
+  const location = useLocation();
+  // Local text keeps typing smooth; it follows the URL when ?q= changes elsewhere (Back, links)
+  const [searchText, setSearchText] = useState(query);
+  const [syncedQuery, setSyncedQuery] = useState(query);
+  if (query !== syncedQuery) {
+    setSyncedQuery(query);
+    setSearchText(query);
+  }
+
+  // The "/" shortcut from another page lands here with focusSearch set
+  useEffect(() => {
+    const state = location.state as { focusSearch?: boolean } | null;
+    if (state?.focusSearch) searchRef.current?.focus();
+  }, [location.state]);
 
   const filtered = useMemo(() => {
     let list = [...tasks];
     if (filterProject) list = list.filter((t) => t.projectId === filterProject);
     if (filterStatus) list = list.filter((t) => t.status === filterStatus);
+    const needle = query.trim().toLowerCase();
+    if (needle) list = list.filter((t) => t.title.toLowerCase().includes(needle));
     return list.sort((a, b) => {
       const pri = { urgent: 0, high: 1, medium: 2, low: 3 };
       return pri[a.priority] - pri[b.priority];
     });
-  }, [tasks, filterProject, filterStatus]);
+  }, [tasks, filterProject, filterStatus, query]);
 
   const groups = useMemo(() => {
     if (groupBy === 'status') {
@@ -71,6 +89,23 @@ export function List() {
     setParams(next);
   }
 
+  function setSearch(value: string) {
+    setSearchText(value);
+    setSyncedQuery(value);
+    const next = new URLSearchParams(params);
+    if (value) next.set('q', value);
+    else next.delete('q');
+    setParams(next, { replace: true });
+  }
+
+  function handleSearchKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key !== 'Escape') return;
+    e.preventDefault();
+    // First Esc clears the text, the next one leaves the box
+    if (searchText) setSearch('');
+    else e.currentTarget.blur();
+  }
+
   return (
     <div>
       <div className="page-header">
@@ -89,6 +124,27 @@ export function List() {
             + New task
           </button>
         </div>
+      </div>
+
+      <div className="filter-bar">
+        <label
+          htmlFor="list-search"
+          style={{ fontSize: '0.8rem', color: 'var(--earth)', fontWeight: 600 }}
+        >
+          Search:
+        </label>
+        <input
+          ref={searchRef}
+          id="list-search"
+          className="list-search"
+          type="search"
+          placeholder="Task title (press /)"
+          aria-keyshortcuts="/"
+          autoComplete="off"
+          value={searchText}
+          onChange={(e) => setSearch(e.target.value)}
+          onKeyDown={handleSearchKeyDown}
+        />
       </div>
 
       <div className="filter-bar">
