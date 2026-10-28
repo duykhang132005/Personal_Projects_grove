@@ -6,12 +6,25 @@ Nature-themed personal todo app. Built with Vite, React 19, TypeScript, React Ro
 
 - **Today** : overview of what is due now and upcoming
 - **Calendar** : week and month views with a rigid equal-column grid
-- **List** : browse and filter tasks
+- **List** : browse, filter, and search tasks by title
 - **Projects** : organize work into projects
 - **Garden** : one plant grown from weekly XP (daily water + task completion)
 - **Task detail** : description, priority, due date/time, tags, links, notes, breakdowns, and mini-steps
 - **Repeating tasks** : daily, weekdays, weekly, or monthly; completing one plants the next occurrence
 - **Persistence** : `localStorage`, JSON export/import, and seed reset
+
+## Keyboard and calendar
+
+| Key or control | What it does |
+| --- | --- |
+| `n` | New task, prefilled by page (today on Today and Calendar, the project on a project page or a project-filtered List) |
+| `/` | Focus the List title search (saved as `?q=`); from a project page it opens List filtered to that project |
+| `?` | Open the keyboard help panel |
+| `Esc` | Close a dialog; in the search box, the first press clears it and the next leaves the box |
+| Calendar day `+` | Add a task on that day (double-clicking the day also works) |
+| Calendar `+N more` | Opens that day in week view, highlighted |
+
+Shortcuts are ignored while you type in a field, while a dialog is open, or with Ctrl, Alt or Cmd held.
 
 ## Requirements
 

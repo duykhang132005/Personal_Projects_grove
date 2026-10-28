@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   addDays,
@@ -29,6 +29,16 @@ export function Calendar() {
   const [view, setView] = useState<CalView>('month');
   const [modalOpen, setModalOpen] = useState(false);
   const [modalDate, setModalDate] = useState<string | null>(null);
+  // Day opened from a month cell's "+N more"; highlighted in week view until you navigate away
+  const [focusDay, setFocusDay] = useState<string | null>(null);
+
+  // After "+N more" swaps to week view, move keyboard focus onto that day's add button
+  useEffect(() => {
+    if (view !== 'week' || !focusDay) return;
+    document
+      .querySelector<HTMLButtonElement>(`[data-day="${focusDay}"] .cal-add`)
+      ?.focus();
+  }, [view, focusDay]);
 
   const datedTasks = useMemo(
     () => tasks.filter((t) => t.dueDate && t.status !== 'done'),
@@ -59,6 +69,31 @@ export function Calendar() {
   function openNew(day: Date) {
     setModalDate(format(day, 'yyyy-MM-dd'));
     setModalOpen(true);
+  }
+
+  function showDay(day: Date) {
+    setCursor(day);
+    setView('week');
+    setFocusDay(format(day, 'yyyy-MM-dd'));
+  }
+
+  function moreButton(day: Date, hidden: number) {
+    const label = `Show ${hidden} more ${hidden === 1 ? 'task' : 'tasks'} on ${format(day, 'EEE, MMM d')}`;
+    return (
+      <button
+        type="button"
+        className="cal-more"
+        aria-label={label}
+        title={label}
+        onClick={(e) => {
+          e.stopPropagation();
+          showDay(day);
+        }}
+        onDoubleClick={(e) => e.stopPropagation()}
+      >
+        +{hidden} more
+      </button>
+    );
   }
 
   function addButton(day: Date) {
@@ -107,25 +142,30 @@ export function Calendar() {
         <button
           type="button"
           className="btn btn-secondary btn-sm"
-          onClick={() =>
-            setCursor(view === 'month' ? subMonths(cursor, 1) : addDays(cursor, -7))
-          }
+          onClick={() => {
+            setFocusDay(null);
+            setCursor(view === 'month' ? subMonths(cursor, 1) : addDays(cursor, -7));
+          }}
         >
           ←
         </button>
         <button
           type="button"
           className="btn btn-secondary btn-sm"
-          onClick={() => setCursor(parseISO(today))}
+          onClick={() => {
+            setFocusDay(null);
+            setCursor(parseISO(today));
+          }}
         >
           Today
         </button>
         <button
           type="button"
           className="btn btn-secondary btn-sm"
-          onClick={() =>
-            setCursor(view === 'month' ? addMonths(cursor, 1) : addDays(cursor, 7))
-          }
+          onClick={() => {
+            setFocusDay(null);
+            setCursor(view === 'month' ? addMonths(cursor, 1) : addDays(cursor, 7));
+          }}
         >
           →
         </button>
@@ -138,14 +178,20 @@ export function Calendar() {
           <button
             type="button"
             className={view === 'week' ? 'active' : ''}
-            onClick={() => setView('week')}
+            onClick={() => {
+              setFocusDay(null);
+              setView('week');
+            }}
           >
             Week
           </button>
           <button
             type="button"
             className={view === 'month' ? 'active' : ''}
-            onClick={() => setView('month')}
+            onClick={() => {
+              setFocusDay(null);
+              setView('month');
+            }}
           >
             Month
           </button>
@@ -192,11 +238,7 @@ export function Calendar() {
                     </Link>
                   );
                 })}
-                {items.length > 3 && (
-                  <span style={{ fontSize: '0.65rem', color: 'var(--earth)' }}>
-                    +{items.length - 3} more
-                  </span>
-                )}
+                {items.length > 3 && moreButton(day, items.length - 3)}
               </div>
             );
           })}
@@ -205,10 +247,14 @@ export function Calendar() {
         <div className="week-grid">
           {weekDays.map((day) => {
             const items = tasksOn(day);
+            const key = format(day, 'yyyy-MM-dd');
             return (
               <div
                 key={day.toISOString()}
-                className={`week-day${format(day, 'yyyy-MM-dd') === today ? ' today' : ''}`}
+                data-day={key}
+                className={`week-day${key === today ? ' today' : ''}${
+                  key === focusDay ? ' focused' : ''
+                }`}
                 onDoubleClick={() => openNew(day)}
               >
                 <div className="week-day-header">{format(day, 'EEE')}</div>

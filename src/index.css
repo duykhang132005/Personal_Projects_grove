@@ -813,6 +813,12 @@ textarea {
   font-weight: 650;
   color: var(--bark);
   margin-bottom: 0.25rem;
+  /* Header row is at least as tall as the + button (top 0.3rem + 1.5rem, minus the 0.4rem
+     cell padding), so the first task always starts below it. All rem, so it scales with zoom. */
+  display: flex;
+  align-items: center;
+  min-height: 1.5rem;
+  padding-right: 1.6rem;
 }
 
 .month-cell.today .day-num {
@@ -820,8 +826,9 @@ textarea {
   color: white;
   width: 1.5rem;
   height: 1.5rem;
+  padding-right: 0;
   border-radius: 50%;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
 }
@@ -874,6 +881,37 @@ textarea {
   box-shadow: 0 0 0 2px rgba(90, 143, 107, 0.2);
 }
 
+/* Day opened from a month cell's "+N more" */
+.week-day.focused {
+  border-color: var(--leaf-dark);
+  box-shadow: 0 0 0 3px var(--leaf);
+  background: #f0f7f2;
+}
+
+.cal-more {
+  display: block;
+  padding: 0.1rem 0.2rem;
+  margin-top: 1px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  font: inherit;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--earth);
+  cursor: pointer;
+}
+
+.cal-more:hover {
+  color: var(--leaf-dark);
+  text-decoration: underline;
+}
+
+.cal-more:focus-visible {
+  outline: 2px solid var(--leaf);
+  outline-offset: 1px;
+}
+
 .week-day-header {
   font-size: 0.78rem;
   font-weight: 700;
@@ -921,6 +959,7 @@ textarea {
 .week-day:hover .cal-add,
 .month-cell.today .cal-add,
 .week-day.today .cal-add,
+.week-day.focused .cal-add,
 .cal-add:focus-visible {
   opacity: 1;
 }

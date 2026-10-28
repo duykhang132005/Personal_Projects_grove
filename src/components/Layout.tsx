@@ -71,6 +71,17 @@ export function Layout() {
       // Any open dialog (page popups included) keeps the keyboard
       if (document.querySelector('[role="dialog"]')) return;
       e.preventDefault();
+      // List keeps its own filters; a project page carries its project over (if it still exists)
+      function searchTarget(): string {
+        if (location.pathname === '/list') return location.search;
+        if (location.pathname === '/projects') {
+          const project = new URLSearchParams(location.search).get('project');
+          if (project && getProject(project)) {
+            return `?${new URLSearchParams({ project }).toString()}`;
+          }
+        }
+        return '';
+      }
       if (isNew) {
         setQuickAdd(
           quickAddDefaults(location.pathname, location.search, (id) => Boolean(getProject(id)))
@@ -78,7 +89,7 @@ export function Layout() {
       } else if (isSearch) {
         const box = document.getElementById('list-search');
         if (location.pathname === '/list' && box) box.focus();
-        else navigate({ pathname: '/list', search: location.pathname === '/list' ? location.search : '' }, { state: { focusSearch: true } });
+        else navigate({ pathname: '/list', search: searchTarget() }, { state: { focusSearch: true } });
       } else {
         setHelpOpen(true);
       }
