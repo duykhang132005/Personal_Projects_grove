@@ -265,6 +265,7 @@ export function TaskDetail() {
                     />
                     <input
                       type="text"
+                      aria-label="Mini-step title"
                       value={step.title}
                       onChange={(e) =>
                         updateStep(bd.id, step.id, { title: e.target.value })
@@ -317,12 +318,14 @@ export function TaskDetail() {
                 <input
                   type="text"
                   placeholder="Label"
+                  aria-label="Link label"
                   value={link.label}
                   onChange={(e) => updateLink(link.id, { label: e.target.value })}
                 />
                 <input
                   type="url"
                   placeholder="https://…"
+                  aria-label="Link URL"
                   value={link.url}
                   onChange={(e) => updateLink(link.id, { url: e.target.value })}
                 />
@@ -339,6 +342,7 @@ export function TaskDetail() {
                 <button
                   type="button"
                   className="btn btn-ghost btn-sm"
+                  aria-label="Remove link"
                   onClick={() => removeLink(link.id)}
                 >
                   ✕

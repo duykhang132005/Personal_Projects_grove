@@ -334,16 +334,6 @@ button {
 }
 
 /* Grid layouts */
-.grid-2 {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-}
-.grid-3 {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-}
 .grid-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -1333,7 +1323,6 @@ textarea {
   .detail-layout {
     grid-template-columns: 1fr;
   }
-  .grid-2,
   .form-row {
     grid-template-columns: 1fr;
   }

@@ -5,6 +5,7 @@ import { TaskItem } from '../components/TaskItem';
 import { NewTaskModal } from '../components/NewTaskModal';
 import { useToday } from '../hooks/useToday';
 import { useNow } from '../hooks/useNow';
+import { isOverdue } from '../utils/format';
 
 export function Today() {
   const { tasks } = useGrove();
@@ -13,19 +14,16 @@ export function Today() {
   // sections, counts, and header below recompute while the app stays open.
   const todayStr = useToday();
   // Once-a-minute re-render so the greeting and time-based Overdue badges stay current
-  useNow();
+  const now = useNow();
 
   const { todayTasks, upcoming, overdue, inProgress, inProgressCount, doneToday, openCount } =
     useMemo(() => {
       const open = tasks.filter((t) => t.status !== 'done');
-      const todayTasks = open.filter(
-        (t) => t.dueDate && isToday(parseISO(t.dueDate))
-      );
-      const overdue = open.filter((t) => {
-        if (!t.dueDate) return false;
-        const d = parseISO(t.dueDate);
-        return isPast(d) && !isToday(d);
-      });
+      const overdue = open.filter(isOverdue);
+      const overdueIds = new Set(overdue.map((t) => t.id));
+      const todayTasks = open
+        .filter((t) => t.dueDate && isToday(parseISO(t.dueDate)) && !overdueIds.has(t.id))
+        .sort((a, b) => (a.dueTime ?? '').localeCompare(b.dueTime ?? ''));
       const upcoming = open
         .filter((t) => {
           if (!t.dueDate) return false;
@@ -55,7 +53,9 @@ export function Today() {
         doneToday,
         openCount: open.length,
       };
-    }, [tasks, todayStr]);
+    // isOverdue reads the clock internally, so the minute tick must invalidate this memo.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [tasks, todayStr, now]);
 
   // Cheap, so recomputed on every render (including the minute tick above)
   const hour = new Date().getHours();
@@ -132,7 +132,6 @@ export function Today() {
         ) : (
           <div className="task-list">
             {todayTasks
-              .sort((a, b) => (a.dueTime ?? '').localeCompare(b.dueTime ?? ''))
               .map((t) => (
                 <TaskItem key={t.id} task={t} />
               ))}
