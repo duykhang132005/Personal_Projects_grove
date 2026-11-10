@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
+import { useDialogFocus } from '../hooks/useDialogFocus';
 
 interface Props {
   open: boolean;
@@ -7,7 +8,7 @@ interface Props {
 
 const SHORTCUTS = [
   { keys: 'N', label: 'New task' },
-  { keys: '/', label: 'Search task titles (opens List)' },
+  { keys: '/', label: 'Search task titles in List (keeps the current project filter)' },
   { keys: '?', label: 'Show this help' },
   { keys: 'Esc', label: 'Close a dialog, or clear the search box' },
 ];
@@ -19,37 +20,13 @@ export function ShortcutHelp({ open, onClose }: Props) {
 }
 
 function ShortcutHelpDialog({ onClose }: { onClose: () => void }) {
-  const closeRef = useRef<HTMLButtonElement>(null);
-  const onCloseRef = useRef(onClose);
-
-  useEffect(() => {
-    onCloseRef.current = onClose;
-  }, [onClose]);
-
-  useEffect(() => {
-    // Move focus in, and give it back to wherever it was on close
-    const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    closeRef.current?.focus();
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        onCloseRef.current();
-      } else if (e.key === 'Tab') {
-        // Only one control inside, so keep focus on it
-        e.preventDefault();
-        closeRef.current?.focus();
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      previous?.focus();
-    };
-  }, []);
+  const containerRef = useRef<HTMLDivElement>(null);
+  useDialogFocus(containerRef, onClose);
 
   return (
     <div className="modal-backdrop" onClick={onClose} role="presentation">
       <div
+        ref={containerRef}
         className="modal shortcut-help"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
@@ -67,9 +44,9 @@ function ShortcutHelpDialog({ onClose }: { onClose: () => void }) {
             </div>
           ))}
         </dl>
-        <p className="shortcut-note">Shortcuts are ignored while you type in a field.</p>
+        <p className="shortcut-note">Shortcuts are ignored while you type in a field, while a dialog is open, or with Ctrl, Alt or Cmd held.</p>
         <div className="modal-actions">
-          <button ref={closeRef} type="button" className="btn btn-secondary" onClick={onClose}>
+          <button type="button" className="btn btn-secondary" onClick={onClose}>
             Close
           </button>
         </div>

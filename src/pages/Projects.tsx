@@ -1,12 +1,39 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useGrove } from '../context/useGrove';
 import { TaskItem } from '../components/TaskItem';
 import { NewTaskModal } from '../components/NewTaskModal';
 import { useNow } from '../hooks/useNow';
+import { useDialogFocus } from '../hooks/useDialogFocus';
 
 const COLORS = ['#5a8f6b', '#7a9e6e', '#8b7355', '#6b9e8a', '#9a7b5a', '#5a7a8f'];
 const EMOJIS = ['📚', '🎵', '🌿', '🍃', '🪴', '🌻', '🪺', '🪵'];
+
+function CreateProjectDialog({
+  onClose,
+  children,
+}: {
+  onClose: () => void;
+  children: React.ReactNode;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  useDialogFocus(containerRef, onClose);
+
+  return (
+    <div className="modal-backdrop" onClick={onClose} role="presentation">
+      <div
+        ref={containerRef}
+        className="modal"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="new-proj-title"
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
 
 export function Projects() {
   const { projects, tasks, addProject, deleteProjectWithUndo, updateProject } =
@@ -228,17 +255,7 @@ export function Projects() {
       </p>
 
       {creating && (
-        <div
-          className="modal-backdrop"
-          onClick={() => setCreating(false)}
-          role="presentation"
-        >
-          <div
-            className="modal"
-            onClick={(e) => e.stopPropagation()}
-            role="dialog"
-            aria-labelledby="new-proj-title"
-          >
+        <CreateProjectDialog onClose={() => setCreating(false)}>
             <h3 id="new-proj-title">🌳 New project</h3>
             <form onSubmit={handleCreate}>
               <div className="form-group">
@@ -315,8 +332,7 @@ export function Projects() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
+        </CreateProjectDialog>
       )}
     </div>
   );

@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGrove } from '../context/useGrove';
 import type { Priority, Recurrence } from '../types';
 import { withDayOfMonth } from '../utils/recurrence';
 import { todayKey } from '../utils/garden';
 import { RepeatFields } from './RepeatFields';
+import { useDialogFocus } from '../hooks/useDialogFocus';
 
 interface Props {
   open: boolean;
@@ -30,14 +31,8 @@ function NewTaskForm({ onClose, defaultProjectId = null, defaultDueDate = null }
   const [dueDate, setDueDate] = useState(defaultDueDate ?? '');
   const [priority, setPriority] = useState<Priority>('medium');
   const [repeat, setRepeat] = useState<Recurrence | undefined>(undefined);
-
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose();
-    }
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
+  const containerRef = useRef<HTMLDivElement>(null);
+  useDialogFocus(containerRef, onClose);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -60,6 +55,7 @@ function NewTaskForm({ onClose, defaultProjectId = null, defaultDueDate = null }
   return (
     <div className="modal-backdrop" onClick={onClose} role="presentation">
       <div
+        ref={containerRef}
         className="modal"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
@@ -76,7 +72,6 @@ function NewTaskForm({ onClose, defaultProjectId = null, defaultDueDate = null }
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="What needs tending?"
-              autoFocus
               required
             />
           </div>

@@ -333,8 +333,9 @@ export function TaskDetail() {
                   <a
                     href={link.url}
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     className="btn btn-ghost btn-sm"
+                    aria-label="Open link in new tab"
                   >
                     Open
                   </a>
@@ -354,6 +355,7 @@ export function TaskDetail() {
           <div className="detail-section">
             <h3>📝 Notes</h3>
             <textarea
+              aria-label="Notes"
               value={task.notes}
               onChange={(e) => patch({ notes: e.target.value })}
               placeholder="Scratch pad, reminders, thoughts…"
