@@ -27,13 +27,13 @@ import { useToday } from '../hooks/useToday';
 import { nextDueDate, withDayOfMonth } from '../utils/recurrence';
 import { format, parseISO } from 'date-fns';
 import {
-  WATER_XP,
+  applyDailyWater,
   computeTaskXpAward,
   createFreshGarden,
   ensureGardenWeek,
   todayKey,
-  wateredToday,
 } from '../utils/garden';
+import { restoreDeletedProject, restoreDeletedTask } from '../utils/undoRestore';
 
 function emptyTask(title: string): Task {
   const now = new Date().toISOString();
@@ -331,18 +331,11 @@ export function GroveProvider({ children }: { children: ReactNode }) {
   const waterPlant = useCallback(() => {
     let result: { watered: boolean; reason?: string } = { watered: false };
     setData((prev) => {
-      const garden = rollGarden(prev.garden);
-      if (wateredToday(garden.lastWateredDate)) {
-        result = { watered: false, reason: 'already-watered' };
-        return { ...prev, garden };
-      }
-      const next: GardenState = {
-        ...garden,
-        weekXp: (garden.weekXp ?? 0) + WATER_XP,
-        lastWateredDate: todayKey(),
-      };
-      result = { watered: true };
-      return { ...prev, garden: next };
+      const applied = applyDailyWater(rollGarden(prev.garden));
+      result = applied.watered
+        ? { watered: true }
+        : { watered: false, reason: applied.reason };
+      return { ...prev, garden: applied.garden };
     });
     return result;
   }, [rollGarden]);
@@ -374,9 +367,8 @@ export function GroveProvider({ children }: { children: ReactNode }) {
         'undo',
         () => {
           setData((prev) => {
-            if (prev.tasks.some((t) => t.id === removed.id)) return prev;
-            const tasks = [...prev.tasks];
-            tasks.splice(Math.min(index, tasks.length), 0, removed);
+            const tasks = restoreDeletedTask(prev.tasks, removed, index);
+            if (tasks === prev.tasks) return prev;
             return { ...prev, tasks };
           });
         },
@@ -409,24 +401,14 @@ export function GroveProvider({ children }: { children: ReactNode }) {
       deleteProject(id, stamp);
       openToast(`Project “${removed.name}” deleted`, 'undo', () => {
         setData((prev) => {
-          const projects = prev.projects.some((p) => p.id === removed.id)
-            ? prev.projects
-            : [
-                ...prev.projects.slice(0, index),
-                removed,
-                ...prev.projects.slice(index),
-              ];
-          const tasks = prev.tasks.map((t) => {
-            const originalUpdatedAt = detached.get(t.id);
-            // Leave tasks this delete did not detach, or that were reassigned since
-            if (originalUpdatedAt === undefined || t.projectId !== null) return t;
-            return {
-              ...t,
-              projectId: removed.id,
-              // Roll back only the timestamp the delete itself wrote
-              updatedAt: t.updatedAt === stamp ? originalUpdatedAt : t.updatedAt,
-            };
-          });
+          const { projects, tasks } = restoreDeletedProject(
+            prev.projects,
+            prev.tasks,
+            removed,
+            index,
+            detached,
+            stamp,
+          );
           return { ...prev, projects, tasks };
         });
       });

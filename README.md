@@ -40,6 +40,7 @@ Shortcuts are ignored while you type in a field, while a dialog is open, or with
 | `npm run build` | Typecheck and production build (`tsc -b && vite build`) |
 | `npm run preview` | Preview the production build |
 | `npm run lint` | Lint with oxlint |
+| `npm test` | Vitest unit tests |
 
 ## Getting started
 

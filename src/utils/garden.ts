@@ -150,3 +150,22 @@ export function wateredToday(
 ): boolean {
   return lastWateredDate === todayKey(date);
 }
+
+/** Water once per local day: +WATER_XP, not capped. No-ops if already watered that day. */
+export function applyDailyWater(
+  garden: GardenState,
+  date: Date = new Date(),
+): { garden: GardenState; watered: boolean; reason?: string } {
+  const rolled = ensureGardenWeek(garden, date);
+  if (wateredToday(rolled.lastWateredDate, date)) {
+    return { garden: rolled, watered: false, reason: 'already-watered' };
+  }
+  return {
+    garden: {
+      ...rolled,
+      weekXp: (rolled.weekXp ?? 0) + WATER_XP,
+      lastWateredDate: todayKey(date),
+    },
+    watered: true,
+  };
+}

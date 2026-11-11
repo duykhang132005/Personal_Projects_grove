@@ -56,7 +56,7 @@ export function TaskItem({ task, showProject = true }: Props) {
           )}
           {due && (
             <span className="badge badge-date">
-              {'📅 '}
+              <span aria-hidden="true">{'📅 '}</span>
               {due}
             </span>
           )}

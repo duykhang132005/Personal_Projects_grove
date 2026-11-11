@@ -3,7 +3,17 @@ import { createSeedData } from './seed';
 import { ensureGardenWeek, createFreshGarden } from '../utils/garden';
 import { withNormalizedRecurrence } from '../utils/recurrence';
 
-const STORAGE_KEY = 'grove-data-v1';
+export const STORAGE_KEY = 'grove-data-v1';
+export const CORRUPT_STORAGE_KEY = `${STORAGE_KEY}-corrupt`;
+
+function backupCorruptRaw(raw: string | null): void {
+  if (!raw) return;
+  try {
+    localStorage.setItem(CORRUPT_STORAGE_KEY, raw);
+  } catch {
+    // Quota or disabled storage must not block loading
+  }
+}
 
 function normalizeGroveData(data: GroveData): GroveData {
   return {
@@ -17,8 +27,9 @@ function normalizeGroveData(data: GroveData): GroveData {
 }
 
 export function loadData(): GroveData {
+  let raw: string | null = null;
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
       const seed = createSeedData();
       saveData(seed);
@@ -41,6 +52,7 @@ export function loadData(): GroveData {
     }
     return normalized;
   } catch {
+    backupCorruptRaw(raw);
     const seed = createSeedData();
     saveData(seed);
     return seed;
