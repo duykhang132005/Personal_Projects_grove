@@ -28,6 +28,7 @@ import { nextDueDate, withDayOfMonth } from '../utils/recurrence';
 import { format, parseISO } from 'date-fns';
 import {
   applyDailyWater,
+  applyStreakIfQualified,
   computeTaskXpAward,
   createFreshGarden,
   ensureGardenWeek,
@@ -250,14 +251,14 @@ export function GroveProvider({ children }: { children: ReactNode }) {
           // even when awarded is 0 (daily cap exhausted).
           nextTask = { ...nextTask, xpGranted: true };
 
-          garden = {
+          garden = applyStreakIfQualified({
             ...garden,
             weekXp: (garden.weekXp ?? 0) + awarded,
             taskXpByDay: {
               ...garden.taskXpByDay,
               [day]: used + awarded,
             },
-          };
+          });
         }
 
         // Repeating task: keep this one as done history and plant the next one.
@@ -343,12 +344,15 @@ export function GroveProvider({ children }: { children: ReactNode }) {
   const exportData = useCallback(() => exportJson(withGarden(data)), [data]);
 
   const importData = useCallback((json: string) => {
-    setData(withGarden(importJson(json)));
+    const imported = withGarden(importJson(json));
+    const snapshot = data;
+    setData(imported);
     // Imported data replaces everything, so pending Undo toasts no longer apply
     undoActions.current.clear();
     openActions.current.clear();
     setToasts([]);
-  }, []);
+    openToast('Data imported', 'undo', () => setData(snapshot));
+  }, [data, openToast]);
 
   const resetData = useCallback(() => {
     setData(withGarden(resetToSeed()));

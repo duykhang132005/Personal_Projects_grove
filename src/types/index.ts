@@ -60,11 +60,34 @@ export interface Project {
   emoji: string;
 }
 
+export type GardenStageId =
+  | 'seedling'
+  | 'sprout'
+  | 'sapling'
+  | 'young'
+  | 'mature'
+  | 'ancient';
+
+/** One finished week's plant, kept after the Monday reset */
+export interface ArchivedPlant {
+  weekKey: string;
+  weekStart: string;
+  weekXp: number;
+  stageId: GardenStageId;
+}
+
 export interface GardenState {
   weekKey: string; // current week id (Monday-start local week)
-  weekXp: number; // XP this week (water + tasks)
+  weekXp: number; // XP this week (water + tasks + streak bonus)
   lastWateredDate: string | null; // yyyy-MM-dd
   taskXpByDay: Record<string, number>; // date -> task XP earned that day
+  /** Monday of the current week (yyyy-MM-dd) */
+  weekStart?: string;
+  currentStreak?: number;
+  bestStreak?: number;
+  /** weekKey the streak bonus was already granted for */
+  streakBonusWeekKey?: string | null;
+  weeklyPlants?: ArchivedPlant[];
 }
 
 export interface GroveData {

@@ -44,6 +44,7 @@ const links = [
   { to: '/list', label: 'List', icon: '☰', end: false },
   { to: '/projects', label: 'Projects', icon: '🌳', end: false },
   { to: '/garden', label: 'Garden', icon: '🌱', end: false },
+  { to: '/emporium', label: 'Emporium', icon: '🌲', end: false },
 ];
 
 export function Layout() {

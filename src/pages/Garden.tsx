@@ -1,12 +1,20 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useGrove } from '../context/useGrove';
 import { useToday } from '../hooks/useToday';
+import { GardenPlantPlot } from '../components/GardenPlantPlot';
+import type { ArchivedPlant } from '../types';
 import {
   DAILY_TASK_XP_CAP,
+  STREAK_BONUS_CAP,
+  STREAK_BONUS_PER_WEEK,
   WATER_XP,
   isWilted,
+  parseDay,
   stageForXp,
+  thisMonthPlants,
   wateredToday,
+  weekStartKey,
 } from '../utils/garden';
 
 export function Garden() {
@@ -21,6 +29,14 @@ export function Garden() {
     () => stageForXp(garden.weekXp),
     [garden.weekXp]
   );
+  const todayDate = parseDay(today);
+  const monthPlants = thisMonthPlants(garden.weeklyPlants ?? [], todayDate);
+  const currentPlant: ArchivedPlant = {
+    weekKey: garden.weekKey,
+    weekStart: garden.weekStart ?? weekStartKey(todayDate),
+    weekXp: garden.weekXp,
+    stageId: stage.id,
+  };
 
   function handleWater() {
     waterPlant();
@@ -32,8 +48,13 @@ export function Garden() {
         <div>
           <h2 className="leaf-accent">Garden</h2>
           <p className="subtitle">
-            Grow one plant with weekly XP. Water daily and finish tasks.
+            Grow a plant each week. Water and finish tasks to keep a streak, and keep a monthly bed of what you grew.
           </p>
+        </div>
+        <div className="header-actions">
+          <Link to="/emporium" className="btn btn-secondary">
+            Emporium
+          </Link>
         </div>
       </div>
 
@@ -101,6 +122,14 @@ export function Garden() {
               <span className="value">{garden.weekXp}</span>
             </li>
             <li>
+              <span className="label">Current streak</span>
+              <span className="value">{garden.currentStreak ?? 0} weeks</span>
+            </li>
+            <li>
+              <span className="label">Best streak</span>
+              <span className="value">{garden.bestStreak ?? 0} weeks</span>
+            </li>
+            <li>
               <span className="label">Today&apos;s task XP</span>
               <span className="value">
                 {taskXpToday} / {DAILY_TASK_XP_CAP}
@@ -158,12 +187,34 @@ export function Garden() {
                 <li>
                   Each task only awards XP once, even if you undo it and mark it done again.
                 </li>
-                <li>Week XP resets every Monday (local week).</li>
+                <li>Week XP resets every Monday (local week). The finished plant is kept in this month&apos;s bed.</li>
+                <li>
+                  A week counts toward the streak when you water at least once and earn some task XP. Missing a week resets the current streak.
+                </li>
+                <li>
+                  Streak bonus: +{STREAK_BONUS_PER_WEEK} XP per streak week, capped at +{STREAK_BONUS_CAP}, granted once when the week first qualifies. It does not use the task XP cap.
+                </li>
               </ul>
             </div>
           </div>
         </section>
       </div>
+
+      <section className="garden-bed" aria-labelledby="garden-bed-title">
+        <h3 id="garden-bed-title" className="leaf-accent">
+          This month&apos;s bed
+        </h3>
+        <p className="garden-bed-lead">
+          Archived plants from this month, plus the one growing now. Earlier months are in the{' '}
+          <Link to="/emporium">Emporium</Link>.
+        </p>
+        <div className="garden-bed-row">
+          {monthPlants.map((plant) => (
+            <GardenPlantPlot key={plant.weekKey} plant={plant} />
+          ))}
+          <GardenPlantPlot plant={currentPlant} growing />
+        </div>
+      </section>
     </div>
   );
 }

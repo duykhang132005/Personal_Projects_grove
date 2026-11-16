@@ -46,7 +46,11 @@ export function loadData(): GroveData {
     if (
       !parsed.garden ||
       parsed.garden.weekKey !== normalized.garden!.weekKey ||
-      parsed.garden.weekXp !== normalized.garden!.weekXp
+      parsed.garden.weekXp !== normalized.garden!.weekXp ||
+      !Array.isArray(parsed.garden.weeklyPlants) ||
+      parsed.garden.currentStreak == null ||
+      parsed.garden.bestStreak == null ||
+      !parsed.garden.weekStart
     ) {
       saveData(normalized);
     }

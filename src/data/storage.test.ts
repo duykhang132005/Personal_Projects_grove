@@ -119,4 +119,25 @@ describe('loadData', () => {
     const saved = JSON.parse(store.get(STORAGE_KEY) ?? '{}') as GroveData;
     expect(saved.tasks.some((t) => t.id === 'task-audit-1')).toBe(true);
   });
+
+  it('fills streak and archive defaults when loading old garden data', () => {
+    const payload = sampleData();
+    payload.garden = {
+      weekKey: '2020-W02',
+      weekXp: 80,
+      lastWateredDate: '2020-01-08',
+      taskXpByDay: { '2020-01-08': 20 },
+    };
+    store.set(STORAGE_KEY, JSON.stringify(payload));
+    const loaded = loadData();
+    expect(loaded.tasks.some((t) => t.id === 'task-audit-1')).toBe(true);
+    expect(loaded.garden).toBeDefined();
+    expect(Array.isArray(loaded.garden?.weeklyPlants)).toBe(true);
+    expect(loaded.garden?.currentStreak).toBe(0);
+    expect(loaded.garden?.bestStreak).toBe(0);
+    expect(typeof loaded.garden?.weekStart).toBe('string');
+    const saved = JSON.parse(store.get(STORAGE_KEY) ?? '{}') as GroveData;
+    expect(Array.isArray(saved.garden?.weeklyPlants)).toBe(true);
+    expect(saved.tasks.some((t) => t.id === 'task-audit-1')).toBe(true);
+  });
 });

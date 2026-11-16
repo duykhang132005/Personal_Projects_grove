@@ -10,6 +10,7 @@ import { List } from './pages/List';
 import { TaskDetail } from './pages/TaskDetail';
 import { Projects } from './pages/Projects';
 import { Garden } from './pages/Garden';
+import { Emporium } from './pages/Emporium';
 
 function AppRoutes() {
   const { ready } = useGrove();
@@ -34,6 +35,7 @@ function AppRoutes() {
               <Route path="list" element={<List />} />
               <Route path="projects" element={<Projects />} />
               <Route path="garden" element={<Garden />} />
+              <Route path="emporium" element={<Emporium />} />
               <Route path="task/:id" element={<TaskDetail />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>

@@ -8,7 +8,7 @@ Nature-themed personal todo app. Built with Vite, React 19, TypeScript, React Ro
 - **Calendar** : week and month views with a rigid equal-column grid
 - **List** : browse, filter, and search tasks by title
 - **Projects** : organize work into projects
-- **Garden** : one plant grown from weekly XP (daily water + task completion)
+- **Garden** : one plant grown from weekly XP (daily water + task completion), a weekly streak, and a monthly bed of past plants. The Emporium lists earlier months.
 - **Task detail** : description, priority, due date/time, tags, links, notes, breakdowns, and mini-steps
 - **Repeating tasks** : daily, weekdays, weekly, or monthly; completing one plants the next occurrence
 - **Undo** : deletes show an Undo toast (up to 3 stacked, each undoable)
@@ -95,7 +95,7 @@ src/
   context/GroveContext.tsx  App state and persistence API
   data/                   storage.ts (localStorage) and seed.ts
   hooks/                  useToday (local day key, midnight refresh), useNow (minute tick)
-  pages/                  Today, Calendar, List, Projects, Garden, TaskDetail
+  pages/                  Today, Calendar, List, Projects, Garden, Emporium, TaskDetail
   types/                  Shared TypeScript types
   utils/                  Helpers (ids, formatting, garden XP, recurrence for repeating tasks)
 public/                   Static assets (favicon, icons)

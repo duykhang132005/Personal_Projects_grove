@@ -592,6 +592,7 @@ button {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: white;
+  font-size: 1rem;
 }
 
 .form-row {
@@ -1655,6 +1656,128 @@ textarea {
   font-weight: 600;
   color: var(--leaf-dark);
   text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.garden-bed {
+  margin-top: 1.5rem;
+}
+
+.garden-bed-lead {
+  color: var(--earth);
+  font-size: 0.95rem;
+  margin: -0.25rem 0 1rem;
+}
+
+.garden-bed-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+}
+
+.garden-bed-plant {
+  flex: 1 1 9.5rem;
+  max-width: 12rem;
+  min-width: 8.5rem;
+  text-align: center;
+}
+
+.garden-plant-visual--bed {
+  height: 120px;
+  max-width: none;
+  margin-bottom: 0.55rem;
+  padding-bottom: 0.9rem;
+}
+
+.garden-plant-visual--bed .garden-emoji {
+  font-size: 2.2rem;
+}
+
+.garden-plant-visual--bed.stage-seedling .garden-emoji { font-size: 1.8rem; }
+.garden-plant-visual--bed.stage-sprout .garden-emoji { font-size: 2rem; }
+.garden-plant-visual--bed.stage-sapling .garden-emoji { font-size: 2.15rem; }
+.garden-plant-visual--bed.stage-young .garden-emoji { font-size: 2.3rem; }
+.garden-plant-visual--bed.stage-mature .garden-emoji { font-size: 2.45rem; }
+.garden-plant-visual--bed.stage-ancient .garden-emoji { font-size: 2.6rem; }
+
+.garden-bed-name {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  color: var(--leaf-dark);
+  margin-bottom: 0.15rem;
+}
+
+.garden-bed-meta {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  color: var(--earth);
+  font-size: 0.85rem;
+}
+
+.garden-bed-xp {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--leaf-dark);
+}
+
+.garden-bed-plant.is-growing .garden-bed-week {
+  color: var(--leaf-dark);
+  font-weight: 600;
+}
+
+.emporium-streak {
+  margin-bottom: 1.25rem;
+}
+
+.emporium-streak .garden-stat-list {
+  margin-bottom: 0;
+}
+
+.emporium-months {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.emporium-month {
+  padding: 1.15rem 1.2rem 1.35rem;
+}
+
+.emporium-month-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.9rem;
+}
+
+.emporium-month-head h3 {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+.emporium-month-stats {
+  display: flex;
+  gap: 0.75rem;
+  color: var(--earth);
+  font-size: 0.9rem;
+}
+
+.emporium-month-xp {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--leaf-dark);
+}
+
+@media (max-width: 375px) {
+  .garden-bed-plant {
+    flex-basis: 100%;
+    max-width: none;
+  }
 }
 
 .garden-rules {
