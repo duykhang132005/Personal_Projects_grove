@@ -730,10 +730,7 @@ textarea {
   -webkit-overflow-scrolling: touch;
   border-radius: var(--radius);
 }
-.cal-scroll > .month-grid,
-.cal-scroll > .week-grid {
-  /* keep rigid columns; scroll when viewport is too narrow */
-}
+
 .cal-toolbar {
   display: flex;
   align-items: center;
