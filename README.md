@@ -37,7 +37,7 @@ Shortcuts are ignored while you type in a field, while a dialog is open, or with
 | Command | Description |
 | --- | --- |
 | `npm run dev` | Start the Vite dev server |
-| `npm run build` | Typecheck and production build (`tsc -b && vite build`) |
+| `npm run build` | Typecheck and production build (`tsc -b && vite build && node scripts/copy-404.mjs`) |
 | `npm run preview` | Preview the production build |
 | `npm run lint` | Lint with oxlint |
 | `npm test` | Vitest unit tests |
@@ -91,13 +91,14 @@ src/
   App.tsx                 Routes and loading splash
   main.tsx                Entry
   index.css               Theme and layout styles (including calendar grid)
-  components/             Layout, LoadingScreen, TaskItem, NewTaskModal, UndoToast, RepeatFields, ShortcutHelp
+  components/             Layout, LoadingScreen, TaskItem, NewTaskModal, UndoToast, RepeatFields, ShortcutHelp, GardenPlantPlot
   context/GroveContext.tsx  App state and persistence API
-  data/                   storage.ts (localStorage) and seed.ts
-  hooks/                  useToday (local day key, midnight refresh), useNow (minute tick)
+  data/                   storage.ts (localStorage), seed.ts, and storage.test.ts
+  hooks/                  useToday (local day key, midnight refresh), useNow (minute tick), useDialogFocus.ts
+  lib/                    todaySections.ts and todaySections.test.ts
   pages/                  Today, Calendar, List, Projects, Garden, Emporium, TaskDetail
   types/                  Shared TypeScript types
-  utils/                  Helpers (ids, formatting, garden XP, recurrence for repeating tasks)
+  utils/                  Helpers (ids, formatting, garden XP, recurrence, undoRestore) plus *.test.ts
 public/                   Static assets (favicon, icons)
 ```
 

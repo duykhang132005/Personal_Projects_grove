@@ -363,6 +363,7 @@ button {
   color: var(--leaf-dark);
   margin-top: 0.15rem;
   line-height: 1.2;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Task list items */
@@ -1199,6 +1200,12 @@ textarea {
   .grove-loader__leaf,
   .grove-loader__bar-fill {
     animation: none;
+  }
+  .garden-emoji,
+  .garden-xp-bar-fill,
+  .progress-bar > div,
+  .garden-rules-panel {
+    transition: none;
   }
 }
 
