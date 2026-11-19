@@ -142,12 +142,14 @@ export function Calendar() {
         <button
           type="button"
           className="btn btn-secondary btn-sm"
+          aria-label={view === 'month' ? 'Previous month' : 'Previous week'}
+          title={view === 'month' ? 'Previous month' : 'Previous week'}
           onClick={() => {
             setFocusDay(null);
             setCursor(view === 'month' ? subMonths(cursor, 1) : addDays(cursor, -7));
           }}
         >
-          ←
+          <span aria-hidden="true">←</span>
         </button>
         <button
           type="button"
@@ -162,12 +164,14 @@ export function Calendar() {
         <button
           type="button"
           className="btn btn-secondary btn-sm"
+          aria-label={view === 'month' ? 'Next month' : 'Next week'}
+          title={view === 'month' ? 'Next month' : 'Next week'}
           onClick={() => {
             setFocusDay(null);
             setCursor(view === 'month' ? addMonths(cursor, 1) : addDays(cursor, 7));
           }}
         >
-          →
+          <span aria-hidden="true">→</span>
         </button>
         <h3>
           {view === 'month'

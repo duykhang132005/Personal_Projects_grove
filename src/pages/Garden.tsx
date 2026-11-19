@@ -77,7 +77,7 @@ export function Garden() {
               : ' · max stage reached'}
           </p>
 
-          <div className="garden-xp-bar" role="progressbar" aria-valuenow={Math.round(progress * 100)} aria-valuemin={0} aria-valuemax={100}>
+          <div className="garden-xp-bar" role="progressbar" aria-label="Weekly XP progress" aria-valuenow={Math.round(progress * 100)} aria-valuemin={0} aria-valuemax={100}>
             <div
               className="garden-xp-bar-fill"
               style={{ width: `${Math.round(progress * 100)}%` }}
