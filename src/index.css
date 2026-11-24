@@ -84,6 +84,23 @@ button {
   background: none;
 }
 
+/* Shared keyboard focus ring across interactive controls */
+.btn:focus-visible,
+.nav-link:focus-visible,
+.filter-chip:focus-visible,
+.project-card:focus-visible,
+.task-check:focus-visible,
+.color-swatch:focus-visible {
+  outline: 2px solid var(--leaf-dark);
+  outline-offset: 2px;
+}
+
+.toast-undo:focus-visible,
+.toast-close:focus-visible {
+  outline: 2px solid var(--cream);
+  outline-offset: 2px;
+}
+
 /* Leaf accent utility */
 .leaf-accent::before {
   content: '❧';
@@ -561,12 +578,61 @@ button {
   margin-bottom: 1rem;
 }
 
-.form-group label {
+.form-group label,
+.form-group legend {
   font-size: 0.8rem;
   font-weight: 650;
   color: var(--bark);
   text-transform: uppercase;
   letter-spacing: 0.04em;
+}
+
+.form-fieldset {
+  border: none;
+  min-width: 0;
+}
+
+.form-fieldset legend {
+  margin-bottom: 0.35rem;
+}
+
+.picker-row {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.picker-row--colors {
+  gap: 0.4rem;
+}
+
+.emoji-option {
+  font-size: 1.1rem;
+}
+
+.color-swatch {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+}
+
+.color-swatch.is-selected {
+  border: 3px solid var(--soil);
+}
+
+@media (pointer: coarse) {
+  .color-swatch::before {
+    content: '';
+    position: absolute;
+    inset: -8px;
+  }
+
+  .picker-row--colors {
+    gap: 1rem;
+  }
 }
 
 /* "Every N units" row under a Repeat select */

@@ -6,8 +6,24 @@ import { NewTaskModal } from '../components/NewTaskModal';
 import { useNow } from '../hooks/useNow';
 import { useDialogFocus } from '../hooks/useDialogFocus';
 
-const COLORS = ['#5a8f6b', '#7a9e6e', '#8b7355', '#6b9e8a', '#9a7b5a', '#5a7a8f'];
-const EMOJIS = ['📚', '🎵', '🌿', '🍃', '🪴', '🌻', '🪺', '🪵'];
+const COLORS = [
+  { hex: '#5a8f6b', name: 'Leaf green' },
+  { hex: '#7a9e6e', name: 'Meadow green' },
+  { hex: '#8b7355', name: 'Warm earth' },
+  { hex: '#6b9e8a', name: 'Moss green' },
+  { hex: '#9a7b5a', name: 'Driftwood' },
+  { hex: '#5a7a8f', name: 'Slate blue' },
+] as const;
+const EMOJIS = [
+  { glyph: '📚', label: 'Books' },
+  { glyph: '🎵', label: 'Music note' },
+  { glyph: '🌿', label: 'Herb leaf' },
+  { glyph: '🍃', label: 'Fluttering leaf' },
+  { glyph: '🪴', label: 'Potted plant' },
+  { glyph: '🌻', label: 'Sunflower' },
+  { glyph: '🪺', label: 'Nest with eggs' },
+  { glyph: '🪵', label: 'Wood log' },
+] as const;
 
 function CreateProjectDialog({
   onClose,
@@ -52,7 +68,7 @@ export function Projects() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [emoji, setEmoji] = useState('🪴');
-  const [color, setColor] = useState(COLORS[0]);
+  const [color, setColor] = useState<string>(COLORS[0].hex);
 
   const selected = projects.find((p) => p.id === selectedId);
 
@@ -280,45 +296,39 @@ export function Projects() {
                   placeholder="Optional"
                 />
               </div>
-              <div className="form-group">
-                <label>Emoji</label>
-                <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+              <fieldset className="form-group form-fieldset">
+                <legend>Emoji</legend>
+                <div className="picker-row">
                   {EMOJIS.map((em) => (
                     <button
-                      key={em}
+                      key={em.glyph}
                       type="button"
-                      className={`filter-chip${emoji === em ? ' active' : ''}`}
-                      onClick={() => setEmoji(em)}
-                      style={{ fontSize: '1.1rem' }}
+                      className={`filter-chip emoji-option${emoji === em.glyph ? ' active' : ''}`}
+                      onClick={() => setEmoji(em.glyph)}
+                      aria-label={em.label}
+                      aria-pressed={emoji === em.glyph}
                     >
-                      {em}
+                      <span aria-hidden="true">{em.glyph}</span>
                     </button>
                   ))}
                 </div>
-              </div>
-              <div className="form-group">
-                <label>Color</label>
-                <div style={{ display: 'flex', gap: '0.4rem' }}>
+              </fieldset>
+              <fieldset className="form-group form-fieldset">
+                <legend>Color</legend>
+                <div className="picker-row picker-row--colors">
                   {COLORS.map((c) => (
                     <button
-                      key={c}
+                      key={c.hex}
                       type="button"
-                      onClick={() => setColor(c)}
-                      aria-label={c}
-                      style={{
-                        width: 28,
-                        height: 28,
-                        borderRadius: '50%',
-                        background: c,
-                        border:
-                          color === c
-                            ? '3px solid var(--soil)'
-                            : '2px solid transparent',
-                      }}
+                      className={`color-swatch${color === c.hex ? ' is-selected' : ''}`}
+                      onClick={() => setColor(c.hex)}
+                      aria-label={c.name}
+                      aria-pressed={color === c.hex}
+                      style={{ background: c.hex }}
                     />
                   ))}
                 </div>
-              </div>
+              </fieldset>
               <div className="modal-actions">
                 <button
                   type="button"

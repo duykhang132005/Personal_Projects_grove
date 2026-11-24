@@ -8,6 +8,8 @@ export function Emporium() {
   const { garden } = useGrove();
   const today = useToday();
   const beds = pastMonthBeds(garden.weeklyPlants ?? [], parseDay(today));
+  const currentStreak = garden.currentStreak ?? 0;
+  const bestStreak = garden.bestStreak ?? 0;
 
   return (
     <div>
@@ -27,11 +29,15 @@ export function Emporium() {
         <ul className="garden-stat-list">
           <li>
             <span className="label">Current streak</span>
-            <span className="value">{garden.currentStreak ?? 0} weeks</span>
+            <span className="value">
+              {currentStreak} {currentStreak === 1 ? 'week' : 'weeks'}
+            </span>
           </li>
           <li>
             <span className="label">Best streak</span>
-            <span className="value">{garden.bestStreak ?? 0} weeks</span>
+            <span className="value">
+              {bestStreak} {bestStreak === 1 ? 'week' : 'weeks'}
+            </span>
           </li>
         </ul>
       </section>
@@ -54,7 +60,9 @@ export function Emporium() {
                   {bed.label}
                 </h3>
                 <p className="emporium-month-stats">
-                  <span>{bed.plants.length} plants</span>
+                  <span>
+                    {bed.plants.length} {bed.plants.length === 1 ? 'plant' : 'plants'}
+                  </span>
                   <span className="emporium-month-xp">{bed.totalXp} XP</span>
                 </p>
               </header>

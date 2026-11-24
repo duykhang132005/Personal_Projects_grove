@@ -25,6 +25,8 @@ export function Garden() {
   const alreadyWatered = wateredToday(garden.lastWateredDate);
   const wilted = isWilted(garden.lastWateredDate) && !alreadyWatered;
   const taskXpToday = garden.taskXpByDay[today] ?? 0;
+  const currentStreak = garden.currentStreak ?? 0;
+  const bestStreak = garden.bestStreak ?? 0;
   const { stage, next, xpIntoStage, xpForNext, progress } = useMemo(
     () => stageForXp(garden.weekXp),
     [garden.weekXp]
@@ -123,11 +125,15 @@ export function Garden() {
             </li>
             <li>
               <span className="label">Current streak</span>
-              <span className="value">{garden.currentStreak ?? 0} weeks</span>
+              <span className="value">
+                {currentStreak} {currentStreak === 1 ? 'week' : 'weeks'}
+              </span>
             </li>
             <li>
               <span className="label">Best streak</span>
-              <span className="value">{garden.bestStreak ?? 0} weeks</span>
+              <span className="value">
+                {bestStreak} {bestStreak === 1 ? 'week' : 'weeks'}
+              </span>
             </li>
             <li>
               <span className="label">Today&apos;s task XP</span>
