@@ -266,7 +266,7 @@ export function Calendar() {
                 {addButton(day)}
                 <div className="task-list">
                   {items.length === 0 && (
-                    <p style={{ fontSize: '0.8rem', color: 'var(--earth)' }}>
+                    <p className="muted-hint--sm">
                       Clear
                     </p>
                   )}
@@ -293,7 +293,7 @@ export function Calendar() {
       )}
       </div>
 
-      <p style={{ marginTop: '1rem', fontSize: '0.8rem', color: 'var(--earth)' }}>
+      <p className="muted-hint--sm" style={{ marginTop: '1rem' }}>
         Tip: use a day's + button, or double-click the day, to plant a task there.
       </p>
 

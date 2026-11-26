@@ -79,7 +79,7 @@ export function Today() {
       </div>
 
       {overdue.length > 0 && (
-        <section style={{ marginBottom: '1.5rem' }}>
+        <section className="page-section">
           <h3 className="section-title">⚠ Overdue</h3>
           <div className="task-list">
             {overdue.map((t) => (
@@ -89,7 +89,7 @@ export function Today() {
         </section>
       )}
 
-      <section style={{ marginBottom: '1.5rem' }}>
+      <section className="page-section">
         <h3 className="section-title">☀ Today</h3>
         {todayTasks.length === 0 ? (
           <div className="empty card">
@@ -107,7 +107,7 @@ export function Today() {
       </section>
 
       {inProgress.length > 0 && (
-        <section style={{ marginBottom: '1.5rem' }}>
+        <section className="page-section">
           <h3 className="section-title">🌿 In progress</h3>
           <div className="task-list">
             {inProgress.map((t) => (
@@ -118,7 +118,7 @@ export function Today() {
       )}
 
       {upcoming.length > 0 && (
-        <section style={{ marginBottom: '1.5rem' }}>
+        <section className="page-section">
           <h3 className="section-title">🌱 Coming up</h3>
           <div className="task-list">
             {upcoming.map((t) => (

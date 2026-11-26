@@ -213,7 +213,7 @@ export function TaskDetail() {
             </div>
             {progress.total > 0 && (
               <div style={{ marginBottom: '0.75rem' }}>
-                <span style={{ fontSize: '0.8rem', color: 'var(--earth)' }}>
+                <span className="muted-hint--sm">
                   {progress.done} / {progress.total} steps
                 </span>
                 <div className="progress-bar">

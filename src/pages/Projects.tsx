@@ -187,7 +187,7 @@ export function Projects() {
               }
             />
           </div>
-          <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: 'var(--earth)' }}>
+          <p className="muted-hint" style={{ marginTop: '0.75rem' }}>
             {c.open} open · {c.total} total
           </p>
         </div>
@@ -265,7 +265,7 @@ export function Projects() {
         })}
       </div>
 
-      <p style={{ marginTop: '1.25rem', fontSize: '0.85rem', color: 'var(--earth)' }}>
+      <p className="muted-hint" style={{ marginTop: '1.25rem' }}>
         Prefer the list view?{' '}
         <Link to="/list?group=project">Browse all tasks by project →</Link>
       </p>

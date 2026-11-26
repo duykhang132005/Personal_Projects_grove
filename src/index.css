@@ -1295,6 +1295,20 @@ textarea {
   gap: 0.4rem;
 }
 
+.page-section {
+  margin-bottom: 1.5rem;
+}
+
+.muted-hint {
+  font-size: 0.85rem;
+  color: var(--earth);
+}
+
+.muted-hint--sm {
+  font-size: 0.8rem;
+  color: var(--earth);
+}
+
 .filter-bar {
   display: flex;
   gap: 0.5rem;

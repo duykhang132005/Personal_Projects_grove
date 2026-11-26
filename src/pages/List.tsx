@@ -129,7 +129,8 @@ export function List() {
       <div className="filter-bar">
         <label
           htmlFor="list-search"
-          style={{ fontSize: '0.8rem', color: 'var(--earth)', fontWeight: 600 }}
+          className="muted-hint--sm"
+          style={{ fontWeight: 600 }}
         >
           Search:
         </label>
@@ -148,7 +149,7 @@ export function List() {
       </div>
 
       <div className="filter-bar">
-        <span style={{ fontSize: '0.8rem', color: 'var(--earth)', fontWeight: 600 }}>
+        <span className="muted-hint--sm" style={{ fontWeight: 600 }}>
           Group:
         </span>
         <button
@@ -166,9 +167,8 @@ export function List() {
           Project
         </button>
         <span
+          className="muted-hint--sm"
           style={{
-            fontSize: '0.8rem',
-            color: 'var(--earth)',
             fontWeight: 600,
             marginLeft: '0.5rem',
           }}
@@ -225,10 +225,9 @@ export function List() {
             <h3 className="section-title">
               {g.title}
               <span
+                className="muted-hint--sm"
                 style={{
-                  fontSize: '0.8rem',
                   fontWeight: 500,
-                  color: 'var(--earth)',
                   fontFamily: 'var(--font)',
                 }}
               >

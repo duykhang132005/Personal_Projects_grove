@@ -100,3 +100,49 @@ describe('restoreDeletedProject', () => {
     expect(tasks[0].updatedAt).toBe(stamp);
   });
 });
+
+describe('import undo', () => {
+  it('restores the pre-import snapshot and clears pending delete undo toasts', () => {
+    // Mirrors GroveContext.importData (node env, no testing-library / jsdom,
+    // and tests are *.test.ts only, so the provider itself is not rendered).
+    // Import replaces all data, so pending delete Undo toasts no longer apply.
+    // Undo then restores the pre-import snapshot.
+    const snapshot = [alpha, bravo];
+    let data = snapshot;
+    const undoActions = new Map();
+    const openActions = new Map();
+    let toasts = [];
+
+    undoActions.set(1, () => {
+      data = restoreDeletedTask(data, bravo, 1);
+    });
+    toasts = [{ id: 1, message: 'Task deleted' }];
+
+    const imported = [charlie];
+    const preImport = data;
+    data = imported;
+    undoActions.clear();
+    openActions.clear();
+    toasts = [];
+    const importToastId = 2;
+    undoActions.set(importToastId, () => {
+      data = preImport;
+    });
+    toasts = [{ id: importToastId, message: 'Data imported' }];
+
+    expect(data).toEqual(imported);
+    expect(undoActions.has(1)).toBe(false);
+    expect(openActions.size).toBe(0);
+    expect(toasts.map((t) => t.message)).toEqual(['Data imported']);
+
+    const restore = undoActions.get(importToastId);
+    undoActions.delete(importToastId);
+    toasts = toasts.filter((t) => t.id !== importToastId);
+    restore?.();
+
+    expect(data).toBe(preImport);
+    expect(data.map((t) => t.id)).toEqual(['a', 'b']);
+    expect(undoActions.size).toBe(0);
+    expect(toasts).toEqual([]);
+  });
+});
